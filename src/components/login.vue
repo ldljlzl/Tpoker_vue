@@ -1,8 +1,22 @@
 <template>
     <div>
-        <h1>德州扑克游戏大厅</h1>
-        <p>欢迎来到lzl的德州扑克游戏大厅，祝您游戏愉快</p>
-        <button>已有账号，马上进入大厅</button>
-        <button>还没账号，现在就去注册</button>
+        <el-radio-group v-model="labelPosition" size="small">
+            <el-radio-button label="left">账号</el-radio-button>
+            <el-radio-button label="right">密码</el-radio-button>
+        </el-radio-group>
+        <div style="margin: 20px;"></div>
+        <el-form :label-position="labelPosition" label-width="80px" :model="formLabelAlign">
+            <el-form-item label="账号">
+                <el-input v-model="formLabelAlign.name"></el-input>
+            </el-form-item>
+            <el-form-item label="密码">
+                <el-input v-model="formLabelAlign.region"></el-input>
+            </el-form-item>
+        </el-form>
+        <el-form-item>
+            <el-button type="primary" @click="onSubmit">登录</el-button>
+            <el-button>还没账号，前去注册</el-button>
+        </el-form-item>
     </div>
 </template>
+
