@@ -1,46 +1,31 @@
 <template>
-    <!--<div>-->
         <div class="lobby">
             <div class="topPanel ">
                 <div>
                     <div class="seat top">
-                        <div class="topPanelPerson">
-                            <img src="../assets/img/user.png" class="user" alt="user">
-                            <span>namasde</span>
-                        </div>
-                            
-                        <div class="middlePanelPerson">
-                            <img src="../assets/img/pokerBack.jpg" class="pokerBackLeft " alt="pokerBack">
-                            <img src="../assets/img/pokerBack.jpg" class="pokerBackRight" alt="pokerBack">
-                        </div>
-                        <div class="bottomPanelPerson">
-                            <span>135分</span>
-                        </div>    
+                        <player>  </player>  
                     </div>
                     <div class="seat top">
-                        
+                        <player>  </player>  
                     </div>
                     <div class="seat top">
-                        
+                        <player>  </player> 
                     </div>
                     <div class="seat top">
-                        
+                        <player>  </player> 
                     </div>
                 </div>  
             </div>
             <div class="middlePanel">
-                <!--<div>-->
                     <div class="seat">
-                        
+                        <player>  </player> 
                     </div>
                     <div class="public">
                         
                     </div>
                     <div class="seat">
-                        
+                        <player>  </player> 
                     </div>
-                <!--</div>-->
-                    
             </div>
             <div class="bottomPanel">
                 <div class="myseat">
@@ -51,14 +36,26 @@
                 </div>
             </div>
         </div>
-    <!--</div>    -->
 </template>
 <script>
+import player from './player'
 export default {
     data () {
         return {
+            players:[
+                {
+                    account:'hhaha',
+                    seatNum:1,
+                    cards:[],
+                    score:500,
+
+                }
+            ]
         }
     },
+    components:{
+        player
+    }
 }
 </script>
 
@@ -127,36 +124,11 @@ div.top{
     position: relative;
     left:30%;
 }
-
-
 div.seat,.myseat{
     border: 2px solid black;
     background-color: red; 
 }
-.topPanelPerson{
-    height: 10%;
-    margin-bottom: 5%;
-    margin-top: 5%;
-}
-.middlePanelPerson{
-    height: 60%;
-}
-.bottomPanelPerson{
-    height: 10%;
-    margin-bottom: 5%;
-}
-img.user{
-    height: 120%;
-}
-img.pokerBackLeft,img.pokerBackRight{
-    height: 80%;
-}
-img.pokerBackLeft{
-    transform:rotate(-15deg);
-}
-img.pokerBackRight{
-    transform:rotate(15deg);
-}
+
 
 
 
