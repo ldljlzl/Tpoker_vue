@@ -13,7 +13,7 @@
             <el-input type="password" v-model="ruleForm2.checkPass" auto-complete="off"></el-input>
           </el-form-item>
           <el-form-item>
-            <el-button type="primary" @click="submitForm('ruleForm2')">注册</el-button>
+            <el-button type="primary" @click="register">注册</el-button>
             <el-button @click="resetForm('ruleForm2')">重置</el-button>
           </el-form-item>
         </el-form>
@@ -82,18 +82,15 @@
       };
     },
     methods: {
-      submitForm(formName) {
-        this.$refs[formName].validate((valid) => {
-          if (valid) {
-            alert('submit!');
-          } else {
-            console.log('error submit!!');
-            return false;
-          }
-        });
-      },
-      resetForm(formName) {
-        this.$refs[formName].resetFields();
+      register:function(){
+        this.$http.post('/register',{
+          account:this.ruleForm2.account,
+          password:this.ruleForm2.pass
+        }).then((reponse)=>{
+          
+        },(reponse)=>{
+          // alert(reponse)
+        })
       }
     }
   }
