@@ -1,6 +1,7 @@
 <template>
     <div class="main">
       <div>
+        <p>{{res}}</p>
         <h1>注册</h1>
         <el-form :model="ruleForm2" status-icon :rules="rules2" ref="ruleForm2" label-width="100px" class="demo-ruleForm">
           <el-form-item label="账号" prop="account">
@@ -62,6 +63,7 @@
         }
       };
       return {
+        res:'',
         ruleForm2: {
           pass: '',
           checkPass: '',
@@ -83,13 +85,14 @@
     },
     methods: {
       register:function(){
-        this.$http.post('/register',{
-          account:this.ruleForm2.account,
-          password:this.ruleForm2.pass
-        }).then((reponse)=>{
-          
-        },(reponse)=>{
-          // alert(reponse)
+        this.$http.post('/api/register',this.ruleForm2.account
+        // {
+          // account:this.ruleForm2.account,
+          // password:this.ruleForm2.pass
+        // }
+        ).then((response)=>{
+          alert(response.body.msg)
+          this.res=response
         })
       }
     }

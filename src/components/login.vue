@@ -1,7 +1,7 @@
 <template>
     <div class="main">
       <div>
-        <h1>登录</h1>
+        <h1 class="login">登录</h1>
         <el-form :model="ruleForm2" status-icon :rules="rules2" ref="ruleForm2" label-width="100px" class="demo-ruleForm">
           <el-form-item label="账号" prop="account">
             <el-input v-model="ruleForm2.account"></el-input>
@@ -102,7 +102,7 @@ div.main{
 div.main>div{
   width: 25%;
 }
-h1{
+h1.login{
   position: relative;
   left: 9%;
 }
