@@ -1,5 +1,6 @@
 <template>
     <div class="main">
+      <p>test</p>
       <div>
         <h1 class="login">登录</h1>
         <el-form label-width="100px" class="demo-ruleForm">
