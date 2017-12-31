@@ -1,3 +1,8 @@
+// https://router.vuejs.org/zh-cn/essentials/passing-props.html
+// https://github.com/k55k32/you-draw-i-guess/blob/master/src/WebSocketClient.js
+// http://www.baidu.com/baidu?tn=02049043_69_pg&ie=utf-8&word=websocket
+// http://blog.csdn.net/frank_good/article/details/50856585
+// https://developer.mozilla.org/en-US/docs/Web/API/WebSocket
 <template>
         <div class="lobby">
             <div class="topPanel ">
@@ -29,7 +34,8 @@
             </div>
             <div class="bottomPanel">
                 <div class="myseat">
-                    
+                    <p>用户名：{{this.$route.params.username}}</p>
+                    <p>积分：{{this.$route.params.score}}</p>
                 </div>
                 <div class="chatroom">
                     

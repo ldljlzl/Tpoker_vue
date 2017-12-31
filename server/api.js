@@ -2,7 +2,7 @@ const express=require('express')
 const User=require('./model/user')
 const Player=require('./model/player')
 let router=express.Router()
-//aas
+
 
 router.post('/register',function(req,res,next){
     let account=req.body.account
@@ -56,7 +56,8 @@ router.post('/signin',function(req,res,next){
         else{
             if(res){
                 if(!res.isAdmin){  
-                    _res.cookie('userinfo',{username:account,isAdmin:false},{expires:new Date(Date.now()+60*60*24*1000)})        
+                    _res.cookie('userinfo',{username:account,isAdmin:false},{expires:new Date(Date.now()+60*60*24*1000)})  
+                    let score=res.score      
                     let player=new Player({
                         username:res.account,
                         score:res.score
@@ -69,7 +70,7 @@ router.post('/signin',function(req,res,next){
                         }
                         else{
                             console.log('读取大厅用户列表成功')
-                            _res.send({status:2,msg:'登录成功'})
+                            _res.send({status:2,msg:'登录成功',score:score})
                             return
                         }
                     })
