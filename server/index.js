@@ -1,5 +1,6 @@
 const express=require('express')
 const path=require('path')
+const fs = require('fs')
 const mongoose=require('mongoose')
 const bodyParser=require('body-parser')
 const cookieParser=require('cookie-parser')
@@ -8,10 +9,12 @@ const cookieParser=require('cookie-parser')
 let app=express()
 
 
-app.use('/public',express.static(__dirname+'/static'))
-app.use(bodyParser.urlencoded({extended:false}))
+// app.use('/public',express.static(__dirname+'/static'))
+app.use(express.static(path.resolve(__dirname, '../dist')))
 
-//
+
+app.use(bodyParser.json());
+app.use(bodyParser.urlencoded({extended: false}));
 app.use(cookieParser())
 
 mongoose.connect('mongodb://localhost:28017/tpoker',function(err){

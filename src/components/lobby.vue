@@ -42,15 +42,7 @@ import player from './player'
 export default {
     data () {
         return {
-            players:[
-                {
-                    account:'hhaha',
-                    seatNum:1,
-                    cards:[],
-                    score:500,
-
-                }
-            ]
+            players:[]
         }
     },
     components:{
@@ -59,18 +51,27 @@ export default {
 }
 </script>
 
-<style>
-body {
-  background-size:100%;
-  background-image: url(../assets/img/background.jpg);
+<style >
+*{
+    padding: 0;
+    margin: 0
 }
+html,body{
+    height: 100%;  
+    width: 100%; ;
+    overflow:hidden;
+    background-image: url(../assets/img/background.jpg);
+}
+
+
+
 
 /*使lobby占满屏幕*/
 div.lobby{  
-    position: absolute;
+
     height: 100%;  
     width: 100%;  
-    /*background: #EE6AA7;  */
+
 } 
 
 .topPanel{
