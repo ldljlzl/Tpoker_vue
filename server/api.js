@@ -2,7 +2,7 @@ const express=require('express')
 const User=require('./model/user')
 const Player=require('./model/player')
 let router=express.Router()
-
+//aas
 
 router.post('/register',function(req,res,next){
     let account=req.body.account
