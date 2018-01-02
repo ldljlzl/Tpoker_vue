@@ -4,6 +4,7 @@ import index from '@/components/index'
 import register from '@/components/register'
 import login from '@/components/login'
 import lobby from '@/components/lobby'
+import room from '@/components/room'
 
 Vue.use(Router)
 
@@ -28,6 +29,11 @@ export default new Router({
       path: '/lobby',
       name: 'lobby',
       component: lobby
+    },
+    {
+      path: '/room',
+      name: 'room',
+      component: room
     }
   ]
 })
