@@ -6,15 +6,14 @@ import router from './router'
 import ElementUI from 'element-ui'
 import 'element-ui/lib/theme-chalk/index.css'
 import VueResource from 'vue-resource'
-
-
+import Vuex from 'vuex';
 
 
 Vue.config.productionTip = false
 Vue.use(ElementUI)
 Vue.use(VueResource);
 
-
+Vue.use(Vuex)
 
 /* eslint-disable no-new */
 new Vue({

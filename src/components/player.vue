@@ -1,24 +1,32 @@
 <template>
-    <div class="playerPanel">
-        <div class="topPanelPerson">
-            <img src="../assets/img/user.png" class="user" alt="user">
-            <span>{{username}}</span>
+    <div class="main">
+        <div class="playerPanel" v-if="flag">
+            <div class="topPanelPerson">
+                <img src="../assets/img/user.png" class="user" alt="user">
+                <span>{{username}}</span>
+            </div>
+            <div class="middlePanelPerson">
+                <!--<img :src="srcLeft" class="pokerLeft " >
+                <img :src="srcRight" class="pokerRight" >-->
+            </div>
+            <div class="bottomPanelPerson">
+                <span>{{score}}</span>
+            </div>    
         </div>
-        <div class="middlePanelPerson">
-            <img :src="srcLeft" class="pokerLeft " >
-            <img :src="srcRight" class="pokerRight" >
+        <div class="noPlayer" v-if="!flag">
+            <div class="blank">空位</div>
+
         </div>
-        <div class="bottomPanelPerson">
-            <span>{{score}}</span>
-        </div>    
     </div>
+        
 </template>
 
 
-<script>
+<script >
 export default {
   data:function(){
       return {
+        flag:false,  
         username:'lzl',
         score:134,
         pokerDefault:'pokerBack',
@@ -36,6 +44,22 @@ export default {
 </script>
 
 <style scoped>
+.main{
+    height: 100%;
+    width: 100%;
+}
+
+div.noPlayer{
+    height: 100%;
+    width: 100%;
+    background-color: #efefef;
+    opacity: 0.3;
+}
+div.noPlayer div.blank{
+    padding-top: 15%;
+    margin-bottom: 6%;
+    font-size: 60px;
+}
 
 
 .playerPanel{
@@ -57,10 +81,10 @@ export default {
     margin-bottom: 5%;
 }
 img.user{
-    height: 120%;
+    height: 10%;
 }
 img.pokerLeft,img.pokerRight{
-    height: 80%;
+    height: 100%;
 }
 img.pokerLeft{
     transform:rotate(-15deg);
@@ -68,6 +92,8 @@ img.pokerLeft{
 img.pokerRight{
     transform:rotate(15deg);
 }
+
+
 
 </style>
 

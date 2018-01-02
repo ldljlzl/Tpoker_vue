@@ -4,7 +4,8 @@ import index from '@/components/index'
 import register from '@/components/register'
 import login from '@/components/login'
 import lobby from '@/components/lobby'
-import room from '@/components/room'
+import room from '@/components/room1'
+
 
 Vue.use(Router)
 

@@ -39,3 +39,6 @@ Vue.set(vm.userProfile, 'age', 27)
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: false }));
 //一个接受form请求，一个接受json请求，解析的规则不一样
+
+5.app.vue中不要<style scoped>
+子组件用<style scoped>

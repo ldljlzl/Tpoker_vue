@@ -1,5 +1,5 @@
 <template>
-        <div class="lobby">
+        <div class="room">
             <div class="topPanel ">
                 <div>
                     <div class="seat top">
@@ -52,7 +52,8 @@ export default {
 }
 </script>
 
-<style >
+<style scoped>
+
 *{
     padding: 0;
     margin: 0
@@ -69,7 +70,7 @@ html,body{
 
 /*使lobby占满屏幕*/
 div.lobby{  
-
+    text-align: center;
     height: 100%;  
     width: 100%;  
 
