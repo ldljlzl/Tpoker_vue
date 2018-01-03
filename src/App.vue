@@ -11,19 +11,18 @@ export default {
 </script>
 
 <style>
-*{
-    padding: 0;
-    margin: 0
-}
+
 html,body{
     height: 100%;  
     width: 100%;
     overflow:hidden;
+    padding: 0;
+    margin: 0
 }
 #app {
-  /*font-family: 'Avenir', Helvetica, Arial, sans-serif;
+  font-family: 'Avenir', Helvetica, Arial, sans-serif;
   -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;*/
+  -moz-osx-font-smoothing: grayscale;
   text-align: center;
   height: 100%;  
   width: 100%;

@@ -99,6 +99,7 @@
 </script>
 <style scoped>
 div.main{
+  margin-top: 5%;
   display: flex;
   justify-content: center;
 }

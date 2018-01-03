@@ -47,6 +47,7 @@ router.post('/signin',function(req,res,next){
     let account=req.body.account
     let password=req.body.password
     let _res=res
+                    
     User.findOne({account:account,password:password},function(err,res){
         if(err){
             console.log("error: "+err)
@@ -56,11 +57,26 @@ router.post('/signin',function(req,res,next){
         else{
             if(res){
                 if(!res.isAdmin){  
-                    _res.cookie('userinfo',{username:account,isAdmin:false},{expires:new Date(Date.now()+60*60*24*1000)})  
-                    let score=res.score      
+                    _res.cookie('userinfo',{username:account,isAdmin:false},{expires:new Date(Date.now()+60*60*24*1000)}) 
+                    let score=res.score  
+                    let seatArr=[0,1,2,3,4,5,6]
+                    let seatNum=0
+                    Player.find({},function(err,res){
+                        if(err){
+                            console.log("Error:" + err);
+                        }else{
+                            if(res){
+                                res.map(function(obj){
+                                    seatArr.splice(obj.seatNum,1)
+                                })
+                            }
+                            seatNum=seatArr[Math.floor(Math.random()*seatArr.length)]
+                        }
+                    })   
                     let player=new Player({
                         username:res.account,
-                        score:res.score
+                        score:res.score,
+                        seatNum:seatNum
                     })
                     player.save(function(err,res){
                         if(err){
