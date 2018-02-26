@@ -8,6 +8,12 @@
     </div>
 </template>
 <script>
+// import io from 'socket.io-client'
+// let socket=io('http://localhost:8088')
+// alert('hi')
+// socket.on('open',function(){
+//   alert('success')
+// });
 export default {
   data () {
     return {

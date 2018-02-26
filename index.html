@@ -4,9 +4,21 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width,initial-scale=1.0">
     <title>tpoker</title>
+    
   </head>
   <body>
     <div id="app"></div>
+    
     <!-- built files will be auto injected -->
+    <!--C:\Users\Administrator\Tpoker_vue\node_modules\socket.io-client\dist\socket.io.js-->
+    <script src="/static/socket.io/socket.io.js"></script>
+    <script>
+      var socket = io.connect('http://localhost:3000')
+
+      socket.on('news', function (data) {
+        
+      })
+    </script>
   </body>
+
 </html>

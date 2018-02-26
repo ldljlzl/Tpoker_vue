@@ -1,3 +1,7 @@
+cd C:\Program Files\MongoDB\Server\3.4\bin
+mongod --dbpath=C:\Users\Administrator\tpoker_vue\db --port=28017
+
+
 // 1.计算属性是基于它们的依赖进行缓存的。计算属性只有在它的相关依赖发生改变时才会重新求值。
 // 这也同样意味着下面的计算属性将不再更新，因为 Date.now() 不是响应式依赖：
 computed: {
@@ -42,3 +46,33 @@ app.use(bodyParser.urlencoded({ extended: false }));
 
 5.app.vue中不要<style scoped>
 子组件用<style scoped>
+
+
+6.
+// webpack 大部分是 vue-cli 自动生成的，添加了让前后端http请求都转到node的3000端口，而不是前端的8080端口的配置。
+
+devServer: {
+    historyApiFallback: true,
+    noInfo: true,
+
+    //让前后端http请求都转到node的3000端口，而不是前端的8080端口
+    proxy: {
+      '/': {
+        target: 'http://localhost:3000/'
+      }
+    }
+  }
+
+7.socket.io
+socket.io官网若使用Express 3/4代码为
+// var app = require('express')();
+// var server = require('http').Server(app);
+// var io = require('socket.io')(server);
+
+// server.listen(80);
+
+//改为
+var server = require('http').createServer(app);
+var io = require('socket.io').listen(server);
+
+server.listen(3000);

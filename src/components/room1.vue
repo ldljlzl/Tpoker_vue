@@ -21,10 +21,11 @@
     <div class="bottom">
         <div class="myseat" >
             <div class="left">
-                <span>lzl</span>
+                <span>{{this.username}}</span>
                 <div class="myScore">
                     <img class="gold" src="../assets/img/gold.png" alt="gold">
-                    <span>score</span>
+                    <span>{{this.score}}</span>
+                    <span>{{this.mySeatNum}}</span>
                 </div>
             </div>
             <div class="right">
@@ -43,7 +44,18 @@ import player from './player'
 export default {
     data () {
         return {
-            players:[]
+            players:[],
+        }
+    },
+    computed:{
+        score:function(){
+            return this.$route.params.score
+        },
+        username:function(){
+            return this.$route.params.username
+        },
+        mySeatNum:function(){
+            return this.$route.params.mySeatNum
         }
     },
     components:{

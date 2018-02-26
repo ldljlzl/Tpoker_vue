@@ -5,8 +5,10 @@ const mongoose=require('mongoose')
 const bodyParser=require('body-parser')
 const cookieParser=require('cookie-parser')
 
+// const socket=require('./socket')
 
 let app=express()
+
 
 
 // app.use('/public',express.static(__dirname+'/static'))
@@ -34,9 +36,32 @@ app.get('/', function(req, res) {
 
 app.use('/api',require('./api'))
 
-app.listen(8088);
-console.log('success listen8088…………');
-// http://blog.csdn.net/qq_26598303/article/details/53468399
-// https://github.com/FatDong1/vue-blog
-// https://www.cnblogs.com/axl234/p/5899137.html
-// http://blog.csdn.net/MRblackLu/article/details/56286077
+//socket.io官网若使用Express 3/4代码为
+// var app = require('express')();
+// var server = require('http').Server(app);
+// var io = require('socket.io')(server);
+
+// server.listen(80);
+
+var server = require('http').createServer(app);
+var io = require('socket.io').listen(server);
+
+server.listen(3000);
+
+
+
+console.log('success listen3000…………')
+
+
+io.on('connection',function(socket){
+    socket.emit('open')
+    console.log('open')
+    socket.emit('news', { hello: 'world' });
+})
+// io.on('connection', function (socket) {
+//   socket.emit('news', { hello: 'world' });
+//   socket.on('my other event', function (data) {
+//     console.log(data);
+//   });
+// });
+// socket(io)

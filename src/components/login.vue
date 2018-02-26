@@ -39,11 +39,12 @@
           if(response.body.status===2){
             //status=2时注册成功
             this.$router.push({ 
-              path: 'room' ,
-              // params:{
-              //   username:account,
-              //   score:response.body.score
-              // }
+              name: 'room' ,
+              params:{
+                username:response.body.username,
+                score:response.body.score,
+                mySeatNum:response.body.seatNum,
+              }
             })
           }
         })

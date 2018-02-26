@@ -78,6 +78,7 @@ router.post('/signin',function(req,res,next){
                         score:res.score,
                         seatNum:seatNum
                     })
+                    let username=res.account
                     player.save(function(err,res){
                         if(err){
                             console.log('读取大厅用户列表失败')
@@ -86,7 +87,7 @@ router.post('/signin',function(req,res,next){
                         }
                         else{
                             console.log('读取大厅用户列表成功')
-                            _res.send({status:2,msg:'登录成功',score:score})
+                            _res.send({status:2,msg:'登录成功',score:score,username:username,seatNum:seatNum})
                             return
                         }
                     })
