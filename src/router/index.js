@@ -2,7 +2,7 @@ import Vue from 'vue'
 import Router from 'vue-router'
 import index from '@/components/index'
 import register from '@/components/register'
-import login from '@/components/login'
+import signin from '@/components/signin'
 import lobby from '@/components/lobby'
 import room from '@/components/room1'
 
@@ -22,9 +22,9 @@ export default new Router({
       component: register
     },
     {
-      path: '/login',
-      name: 'login',
-      component: login
+      path: '/signin',
+      name: 'signin',
+      component: signin
     },
     {
       path: '/lobby',

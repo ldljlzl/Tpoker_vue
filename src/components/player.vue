@@ -3,14 +3,18 @@
         <div class="playerPanel" v-if="flag">
             <div class="topPanelPerson">
                 <img src="../assets/img/user.png" class="user" alt="user">
-                <span>{{username}}</span>
+                <span>{{this.username}}</span>
             </div>
-            <div class="middlePanelPerson">
-                <!--<img :src="srcLeft" class="pokerLeft " >
-                <img :src="srcRight" class="pokerRight" >-->
+            <div class="middlePanelPerson" v-if="ready">
+                <img :src="srcLeft" class="pokerLeft " >
+                <img :src="srcRight" class="pokerRight" >
+            </div>
+            <div class="middlePanelPerson" v-if="!ready">
+                <div class="noReady">未准备</div>
             </div>
             <div class="bottomPanelPerson">
-                <span>{{score}}</span>
+                <img class="gold" src="../assets/img/gold.png" alt="gold">
+                <span>{{this.score}}</span>
             </div>    
         </div>
         <div class="noPlayer" v-if="!flag">
@@ -24,11 +28,21 @@
 
 <script >
 export default {
+  props:{
+      userinfo:{
+          type:Object,
+          default:function(){
+              return{
+                  username:'',
+                  score:0
+              }
+          }
+      }
+
+  },
   data:function(){
       return {
-        flag:false,  
-        username:'lzl',
-        score:134,
+        ready:false, 
         pokerDefault:'pokerBack',
       }
   },
@@ -38,7 +52,17 @@ export default {
       },
       srcRight:function(){
           return require('../assets/img/'+this.pokerDefault+'.jpg')
+      }, 
+      username:function(){
+          this.flag=true
+          return this.userinfo.username
       },
+      score:function(){
+          return this.userinfo.score
+      },
+      flag:function(){
+          return Boolean(this.userinfo.username)
+      }
   }
 }
 </script>
@@ -72,6 +96,8 @@ div.noPlayer div.blank{
     height: 10%;
     margin-bottom: 5%;
     margin-top: 5%;
+    position: relative;
+    bottom: 5%;
 }
 .middlePanelPerson{
     height: 60%;
@@ -79,6 +105,8 @@ div.noPlayer div.blank{
 .bottomPanelPerson{
     height: 10%;
     margin-bottom: 5%;
+    position: relative;
+    top: 5%;
 }
 img.user{
     height: 10%;
@@ -92,7 +120,25 @@ img.pokerLeft{
 img.pokerRight{
     transform:rotate(15deg);
 }
-
+span{
+    font-size: 20px;
+    color: yellow
+}
+img.gold{
+    width: 15%;
+    position: relative;
+    top: 30%;
+    right: 10%;
+}
+.noReady{
+    font-size: 50px;
+    position: relative;
+    top: 20%;
+    left: 20%;
+    background-color: #51ffff;
+    opacity: 0.3;
+    width: 60%;
+}
 
 
 </style>

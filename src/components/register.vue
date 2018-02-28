@@ -94,6 +94,12 @@
           }
         })
       }
+    },
+    created:function(){
+      if(localStorage.username){
+        alert('您已登录，直接进入房间')
+        this.$router.push('room')
+      }
     }
   }
 </script>

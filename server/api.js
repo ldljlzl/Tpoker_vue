@@ -43,7 +43,7 @@ router.post('/register',function(req,res,next){
     })
 })
 
-router.post('/signin',function(req,res,next){
+router.post('/signin',function(req,res){
     let account=req.body.account
     let password=req.body.password
     let _res=res
@@ -87,7 +87,7 @@ router.post('/signin',function(req,res,next){
                         }
                         else{
                             console.log('读取大厅用户列表成功')
-                            _res.send({status:2,msg:'登录成功',score:score,username:username,seatNum:seatNum})
+                            _res.send({status:2,msg:'登录成功',username:username})
                             return
                         }
                     })
@@ -104,6 +104,33 @@ router.post('/signin',function(req,res,next){
         }
     })
 })
+
+router.get('/getPlayers',function(req,res){
+    _res=res
+    Player.find({},function(err,res){
+        if(err){
+            console.log("Error:" + err)
+            _res.send({status:0,msg:'查询大厅用户列表失败'})
+        }else{
+            _res.send({status:2,msg:'查询大厅用户列表成功',playersInRoom:res})
+        }
+    }) 
+})
+
+router.post('/signout',function(req,res){
+    _res=res
+    let username=req.body.username
+    Player.remove({username:username},function(err,res){
+        if(err){
+            console.log("Error:" + err)
+            _res.send({status:0,msg:'退出房间失败'})
+        }else{
+            console.log('删除player成功')
+            _res.send({status:2,msg:'退出房间成功'})
+        }
+    }) 
+})
+
 
 router.get('/clearCookies',function(req,res){
     res.clearCookie('userinfo')

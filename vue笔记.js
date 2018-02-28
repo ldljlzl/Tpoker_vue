@@ -76,3 +76,57 @@ var server = require('http').createServer(app);
 var io = require('socket.io').listen(server);
 
 server.listen(3000);
+
+8.vue路由params传参
+//  this.$router.push() 方法中 path不能和params一起使用，否则params将无效。需要用name来指定页面。
+
+9.localstorage
+// 存：localStorage.setItem('mydata',JSON.stringify(data.body.data))
+// 取：var mydata = JSON.parse(localStorage.mydata)
+// 删：storage.removeItem("mydata");
+// 改：storage.setItem("mydata","again data"); 
+// 存localStorage记得不要存对象，要转换成字符串
+
+10.钩子
+// beforecreate : 举个栗子：可以在这加个loading事件 
+// created ：在这结束loading，还做一些初始化，实现函数自执行 
+// mounted ： 在这发起后端请求，拿回数据，配合路由钩子做一些事情
+// beforeDestory： 你确认删除XX吗？ destoryed ：当前组件已被删除，清空相关内容
+
+11.路由钩子
+// 1）当页面中有未关闭的窗口, 或未保存的内容时, 阻止页面跳转
+beforeRouteLeave (to, from, next) {
+ //判断是否弹出框的状态和保存信息与否
+ if (this.dialogVisibility === true) {
+  this.dialogVisibility = false //关闭弹出框
+  next(false) //回到当前页面, 阻止页面跳转
+ }else if(this.saveMessage === false) {
+  alert('请保存信息后退出!') //弹出警告
+  next(false) //回到当前页面, 阻止页面跳转
+ }else {
+  next() //否则允许跳转
+ }
+}
+
+// 2）当用户需要关闭页面时, 可以将公用的信息保存到session或Vuex中
+beforeRouteLeave (to, from, next) {
+  localStorage.setItem(name, content); //保存到localStorage中
+  next()
+}
+
+12.函数中this指向发生变化
+let _this=this
+this.$http.get('/api/getPlayers').then((response)=>{
+    // 响应正确回调
+    if(response.body.status===2){
+        let players=response.body.playersInRoom
+        players.forEach(function(item){
+            if(item.username===localStorage.username){
+                //函数中this指向发生变化
+                _this.username=item.username
+                _this.seatNum=item.seatNum
+                _this.score=item.score
+            }
+        })
+    }
+},

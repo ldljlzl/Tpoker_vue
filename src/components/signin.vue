@@ -38,18 +38,18 @@
           alert(response.body.msg)
           if(response.body.status===2){
             //status=2时注册成功
-            this.$router.push({ 
-              name: 'room' ,
-              params:{
-                username:response.body.username,
-                score:response.body.score,
-                mySeatNum:response.body.seatNum,
-              }
-            })
+            localStorage.setItem('username',response.body.username)
+            this.$router.push('room')
           }
         })
       }
         
+    },
+    created:function(){
+      if(localStorage.username){
+        alert('您已登录，直接进入房间')
+        this.$router.push('room')
+      }
     }
   }
 </script>
