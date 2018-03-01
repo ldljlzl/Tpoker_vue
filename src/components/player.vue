@@ -54,7 +54,6 @@ export default {
           return require('../assets/img/'+this.pokerDefault+'.jpg')
       }, 
       username:function(){
-          this.flag=true
           return this.userinfo.username
       },
       score:function(){
@@ -82,7 +81,10 @@ div.noPlayer{
 div.noPlayer div.blank{
     padding-top: 15%;
     margin-bottom: 6%;
-    font-size: 60px;
+    font-size: 400%;
+    display: flex;
+    justify-content:center;
+    align-items:center;
 }
 
 
@@ -105,8 +107,8 @@ div.noPlayer div.blank{
 .bottomPanelPerson{
     height: 10%;
     margin-bottom: 5%;
-    position: relative;
-    top: 5%;
+    /*position: relative;
+    top: 5%;*/
 }
 img.user{
     height: 10%;
@@ -121,7 +123,7 @@ img.pokerRight{
     transform:rotate(15deg);
 }
 span{
-    font-size: 20px;
+    font-size: 200%;
     color: yellow
 }
 img.gold{
@@ -131,13 +133,16 @@ img.gold{
     right: 10%;
 }
 .noReady{
-    font-size: 50px;
+    font-size: 250%;
     position: relative;
     top: 20%;
     left: 20%;
     background-color: #51ffff;
     opacity: 0.3;
     width: 60%;
+    display: flex;
+    justify-content:center;
+    align-items:center;
 }
 
 

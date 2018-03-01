@@ -5,7 +5,7 @@ const mongoose=require('mongoose')
 const bodyParser=require('body-parser')
 const cookieParser=require('cookie-parser')
 
-// const socket=require('./socket')
+const socket=require('./socket')
 
 let app=express()
 
@@ -52,16 +52,6 @@ server.listen(3000);
 
 console.log('success listen3000…………')
 
+socket(io)
 
-io.on('connection',function(socket){
-    socket.emit('open')
-    console.log('open')
-    socket.emit('news', { hello: 'world' });
-})
-// io.on('connection', function (socket) {
-//   socket.emit('news', { hello: 'world' });
-//   socket.on('my other event', function (data) {
-//     console.log(data);
-//   });
-// });
-// socket(io)
+

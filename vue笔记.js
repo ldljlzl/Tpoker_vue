@@ -130,3 +130,23 @@ this.$http.get('/api/getPlayers').then((response)=>{
         })
     }
 },
+
+13.vue使用element-ui的el-input监听不了键盘事件，
+// 原因应该是element-ui自身封装了一层div在input标签外面，把原来的事件隐藏了，所以要加.native，如@keyup.enter.native="sendMsg"
+
+
+14.
+// vue中methods一个方法调用另外一个方法，如test(),需要
+this.$options.methods.test()
+
+15.透明度
+// 背景和后代（比如文字）都透明，用opcity
+// 背景透明，文字不透明，用background:rgba(0-255,0-255,0-255,0-1)，其中最后一项为透明度
+
+16.滚动条
+// 在CSS中设置，得到滚动条
+div{
+  overflow:auto;
+}
+// 设置滚动的距离，使滚动条位于底部
+showMsgDiv.scrollTop = 9999;

@@ -6,14 +6,18 @@ import router from './router'
 import ElementUI from 'element-ui'
 import 'element-ui/lib/theme-chalk/index.css'
 import VueResource from 'vue-resource'
-import Vuex from 'vuex';
+// import Vuex from 'vuex';
+import VueSocketio from 'vue-socket.io'
+
 
 
 Vue.config.productionTip = false
 Vue.use(ElementUI)
 Vue.use(VueResource);
 
-Vue.use(Vuex)
+// Vue.use(Vuex)
+Vue.use(VueSocketio, 'http://localhost:8080')
+
 
 /* eslint-disable no-new */
 new Vue({

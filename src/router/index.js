@@ -3,8 +3,7 @@ import Router from 'vue-router'
 import index from '@/components/index'
 import register from '@/components/register'
 import signin from '@/components/signin'
-import lobby from '@/components/lobby'
-import room from '@/components/room1'
+import room from '@/components/room'
 
 
 Vue.use(Router)
@@ -25,11 +24,6 @@ export default new Router({
       path: '/signin',
       name: 'signin',
       component: signin
-    },
-    {
-      path: '/lobby',
-      name: 'lobby',
-      component: lobby
     },
     {
       path: '/room',
