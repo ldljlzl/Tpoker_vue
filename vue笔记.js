@@ -150,3 +150,14 @@ div{
 }
 // 设置滚动的距离，使滚动条位于底部
 showMsgDiv.scrollTop = 9999;
+
+17.获取点击事件的元素，修改文本
+ready:function(elem){
+    // console.log(elem)为该点击事件
+    // console.log(elem.target)当前点击的元素
+    // console.log(elem.currentTarget)绑定事件的元素
+    elem.target.innerText='取消准备'
+    // 或者
+    elem.target.innerHTML='取消准备'
+    
+} 

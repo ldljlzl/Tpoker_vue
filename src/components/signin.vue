@@ -35,7 +35,7 @@
           account:this.account,
           password:this.password
         }).then((response)=>{
-          alert(response.body.msg)
+          alert('lzl'+response.body.msg)
           if(response.body.status===2){
             //status=2时注册成功
             localStorage.setItem('username',response.body.username)

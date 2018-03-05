@@ -5,7 +5,12 @@ const mongoose=require('mongoose')
 const bodyParser=require('body-parser')
 const cookieParser=require('cookie-parser')
 
+
+
 const socket=require('./socket')
+const myEmitter=require('./emitter')
+
+const ActionPerson=require('./model/actionPerson')
 
 let app=express()
 
@@ -52,6 +57,30 @@ server.listen(3000);
 
 console.log('success listen3000…………')
 
-socket(io)
 
+
+
+let sockets=[]
+// myEmitter.on('event', () => {
+//   console.log('触发了一个事件！')
+// });
+// myEmitter.emit('event')
+
+socket(io,sockets)
+
+// myEmitter.on('begin',()=>{
+
+// })
+
+let actionPerson=new ActionPerson({
+    actionPosition:0
+})
+actionPerson.save(function(err,res){
+    if(err){
+        console.log('初始化开始位置失败')
+    }
+    else{
+        console.log('初始化开始位置成功')
+    }
+})
 

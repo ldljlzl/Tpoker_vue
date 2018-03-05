@@ -1,8 +1,8 @@
 <template>
 
   <div class="room">
-    <div class="readyButton">
-        <el-button type="primary" round>准备</el-button>
+    <div class="readyDiv">
+        <el-button type="primary" round @click="readyFunc" v-show="readyShow">准备</el-button>
     </div>
     <div class="seats">
         <div class="seat one" >
@@ -37,8 +37,8 @@
                 </div>
             </div>
             <div class="right">
-                <img class="card" src="../assets/img/1.jpg" alt="card1">
-                <img class="card" src="../assets/img/2.jpg" alt="card2">
+                <img class="card" src="../assets/img/0.jpg" id="poker0" v-show="bottomPokersFlag">
+                <img class="card" src="../assets/img/0.jpg" id="poker1"  v-show="bottomPokersFlag">
             </div>
                 
         </div>
@@ -61,6 +61,9 @@ export default {
             seatNum:100,
             score:10000,
             username:'lzl',
+            ready:false,
+            bottomPokersFlag:false,
+            readyShow:true
         }
     },
     methods:{
@@ -78,12 +81,48 @@ export default {
                     alert('退出房间错误')
                 })
             }  
-        },      
+        },  
+        readyFunc:function(elem){
+            if(this.ready){
+                this.ready=false
+                elem.target.innerText='准备'
+                this.$http.post('/api/cancelReady',{
+                    username:this.username
+                }).then((response)=>{
+                    if(response.body.status===2){
+                        console.log('取消准备成功')
+                    }else{
+                        console.log('取消准备失败')
+                    }
+                })
+            }else{
+                this.ready=true
+                elem.target.innerText='取消准备'
+                this.$http.post('/api/ready',{
+                    username:this.username
+                }).then((response)=>{
+                    if(response.body.status===2){
+                        console.log('准备成功')
+                    }else{
+                        console.log('准备失败')
+                    }
+                })
+            }
+        },
+        sendBottomPokers:function(){
+            let bottomPoker0=document.getElementById('poker0')
+            let bottomPoker1=document.getElementById('poker1')
+            let src0='../static/img/'+localStorage.bottomPokers[0]+'.jpg'
+            let src1='../static/img/'+localStorage.bottomPokers[1]+'.jpg'
+            bottomPoker0.src=src0
+            bottomPoker1.src=src1 
+        }
     },
     computed:{
 
     },
     created:function(){
+        
         let _this=this
         this.$http.get('/api/getPlayers').then((response)=>{
             // 响应正确回调
@@ -95,6 +134,9 @@ export default {
                         _this.username=item.username
                         _this.seatNum=item.seatNum
                         _this.score=item.score
+                        _this.$socket.emit('sendSeatNum',{
+                            seatNum:_this.seatNum,
+                        })
                     }
                 })
                 players.filter((item)=>(item.username!==localStorage.username)).forEach(function(item){
@@ -109,6 +151,7 @@ export default {
                     }else if(item.seatNum===(_this.seatNum+5)%6){
                         _this.player5=item
                     }else{
+                        alert(_this.seatNum)
                         alert('排序出错')
                     }
                 })
@@ -122,7 +165,18 @@ export default {
     },
     components:{
         player,chatroom
-    }
+    },
+    sockets:{
+        bottomPokers:function(data){
+            this.readyShow=false
+            this.bottomPokersFlag=true
+            let bottomPokers=data
+            localStorage.setItem('bottomPokers',bottomPokers)
+            this.$options.methods.sendBottomPokers()
+             
+
+        },
+    },
 }
 </script>
 <style scoped>
@@ -270,14 +324,14 @@ div.signout button{
 }
 
 /*准备键*/
-div.readyButton{
+div.readyDiv{
     position: absolute;
     top: 80%;
     left:30%;
 }
-div.readyButton button{
+div.readyDiv button{
     height: 200%;
-    width: 150%;
+    width: 120%;
     font-size: 150%;
 }
 </style>

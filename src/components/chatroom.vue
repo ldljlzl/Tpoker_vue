@@ -37,6 +37,7 @@ export default {
         },
         sendMsg:function(){
             if(this.message){
+                
                 this.$socket.emit('sendMessage',{
                     username:this.username,
                     msg:this.message

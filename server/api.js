@@ -1,6 +1,9 @@
 const express=require('express')
 const User=require('./model/user')
 const Player=require('./model/player')
+
+const gameBegin=require('./gameBegin')
+
 let router=express.Router()
 
 
@@ -56,47 +59,49 @@ router.post('/signin',function(req,res){
         }
         else{
             if(res){
+                _res2=res
                 if(!res.isAdmin){  
                     _res.cookie('userinfo',{username:account,isAdmin:false},{expires:new Date(Date.now()+60*60*24*1000)}) 
-                    let score=res.score  
-                    let seatArr=[0,1,2,3,4,5,6]
+                    let score=_res2.score  
+                    let seatArr=[0,1,2,3,4,5]
                     let seatNum=0
                     Player.find({},function(err,res){
                         if(err){
                             console.log("Error:" + err);
                         }else{
                             if(res){
-                                res.map(function(obj){
-                                    seatArr.splice(obj.seatNum,1)
+                                res.map(function(item){
+                                    seatArr.splice(seatArr.indexOf(item.seatNum),1)
                                 })
                             }
                             seatNum=seatArr[Math.floor(Math.random()*seatArr.length)]
+                            let player=new Player({
+                                username:account,
+                                score:score,
+                                seatNum:seatNum,
+                                readyFlag:false
+                            })
+                            player.save(function(err,res){
+                                if(err){
+                                    console.log('读取大厅用户列表失败')
+                                    _res.send({status:1,msg:'读取大厅用户列表失败'})
+                                    return
+                                }
+                                else{
+                                    console.log('读取大厅用户列表成功')
+                                    _res.send({status:2,msg:'登录成功',username:account})
+                                    return
+                                }
+                            })
                         }
-                    })   
-                    let player=new Player({
-                        username:res.account,
-                        score:res.score,
-                        seatNum:seatNum
-                    })
-                    let username=res.account
-                    player.save(function(err,res){
-                        if(err){
-                            console.log('读取大厅用户列表失败')
-                            _res.send({status:1,msg:'读取大厅用户列表失败'})
-                            return
-                        }
-                        else{
-                            console.log('读取大厅用户列表成功')
-                            _res.send({status:2,msg:'登录成功',username:username})
-                            return
-                        }
-                    })
-                    return
+                    }) 
+                    return   
                 }else{
                     _res.cookie('userinfo',{username:account,isAdmin:true},{expires:new Date(Date.now()+60*60*24*1000)})
                     _res.send({status:3,msg:'管理员登录成功'})
                     return
-                }   
+                }  
+                
             }else{
                _res.send({status:4,msg:'账号或密码错误'})
                 return 
@@ -131,6 +136,54 @@ router.post('/signout',function(req,res){
     }) 
 })
 
+
+router.post('/ready',function(req,res){
+    _res=res
+    let username=req.body.username
+    Player.update({username:username},{readyFlag:true},function(err,res){
+        if(err){
+            console.log("Error:" + err)
+            _res.send({status:0,msg:'准备失败'})
+        }else{
+            console.log('准备成功')
+            _res.send({status:2,msg:'准备成功'})
+            let countReady=0
+            Player.count({readyFlag:true},(err,res)=>{
+                if(err){
+                    console.log("Error:" + err)
+                }else {
+                    countReady=res
+                    Player.count({},(err,res)=>{
+                        if(err){
+                            console.log("Error:" + err)
+                        }else{
+                            if(countReady===res){
+                                console.log('所有玩家已经准备')
+                                gameBegin()
+                            }else{
+                                console.log('有玩家还未准备')
+                            }
+                        }
+                    })
+                }
+            })
+        }
+    }) 
+})
+
+router.post('/cancelReady',function(req,res){
+    _res=res
+    let username=req.body.username
+    Player.update({username:username},{readyFlag:false},function(err,res){
+        if(err){
+            console.log("Error:" + err)
+            _res.send({status:0,msg:'取消准备失败'})
+        }else{
+            console.log('准备成功')
+            _res.send({status:2,msg:'取消准备成功'})
+        }
+    }) 
+})
 
 router.get('/clearCookies',function(req,res){
     res.clearCookie('userinfo')
