@@ -112,8 +112,8 @@ export default {
         sendBottomPokers:function(){
             let bottomPoker0=document.getElementById('poker0')
             let bottomPoker1=document.getElementById('poker1')
-            let src0='../static/img/'+localStorage.bottomPokers[0]+'.jpg'
-            let src1='../static/img/'+localStorage.bottomPokers[1]+'.jpg'
+            let src0='../static/img/'+localStorage.bottomPoker0+'.jpg'
+            let src1='../static/img/'+localStorage.bottomPoker1+'.jpg'
             bottomPoker0.src=src0
             bottomPoker1.src=src1 
         }
@@ -171,7 +171,9 @@ export default {
             this.readyShow=false
             this.bottomPokersFlag=true
             let bottomPokers=data
-            localStorage.setItem('bottomPokers',bottomPokers)
+            console.log(bottomPokers)
+            localStorage.setItem('bottomPoker0',bottomPokers[0])
+            localStorage.setItem('bottomPoker1',bottomPokers[1])
             this.$options.methods.sendBottomPokers()
              
 
