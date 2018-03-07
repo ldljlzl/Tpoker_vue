@@ -136,39 +136,95 @@ router.post('/signout',function(req,res){
     }) 
 })
 
-
+function isReady(_res,username){
+    let p=new Promise((resolve,reject)=>{
+        Player.find({username:username},(err,res)=>{
+            if(err){
+                reject(err)
+            }else{
+                if(res){
+                    console.log('用户已准备')
+                }else{
+                    resolve(_res,username)
+                } 
+            }
+        })
+    })
+    return p
+}
+function beReady(_res,username){
+    let p=new Promise((resolve,reject)=>{
+        Player.update({username:username},{readyFlag:true},(err,res)=>{
+            if(err){
+                _res.send({status:0,msg:'准备失败'})
+                reject(err)
+            }else{
+                console.log('准备成功')
+                _res.send({status:2,msg:'准备成功'})
+                resolve()
+            }
+        })
+    })
+    return p
+}
+function findReadyCount(){
+    let p=new Promise((resolve,reject)=>{
+        Player.count({readyFlag:true},(err,res)=>{
+            if(err){
+                reject(err)
+            }else{
+                let data=res
+                console.log('res:'+res)
+                resolve(data)
+            }
+        })
+    })
+    return p
+}
+function findPlayerCount(countReady){
+    let p=new Promise((resolve,reject)=>{
+        Player.count({},(err,res)=>{
+            if(err){
+                reject(err)
+            }else{
+                console.log(countReady)
+                console.log(res)
+                if(countReady===res){
+                    console.log('所有玩家已经准备')
+                    gameBegin()
+                }else{
+                    console.log('有玩家还未准备')
+                }
+            }
+        })
+    })
+    return p
+}
 router.post('/ready',function(req,res){
     _res=res
     let username=req.body.username
-    Player.update({username:username},{readyFlag:true},function(err,res){
-        if(err){
-            console.log("Error:" + err)
-            _res.send({status:0,msg:'准备失败'})
-        }else{
-            console.log('准备成功')
-            _res.send({status:2,msg:'准备成功'})
-            let countReady=0
-            Player.count({readyFlag:true},(err,res)=>{
-                if(err){
-                    console.log("Error:" + err)
-                }else {
-                    countReady=res
-                    Player.count({},(err,res)=>{
-                        if(err){
-                            console.log("Error:" + err)
-                        }else{
-                            if(countReady===res){
-                                console.log('所有玩家已经准备')
-                                gameBegin()
-                            }else{
-                                console.log('有玩家还未准备')
-                            }
-                        }
-                    })
-                }
-            })
-        }
-    }) 
+    isReady(res,username)
+    .catch((err)=>{
+        console.log("Error:" + err)
+    })
+    .then((res,username)=>{
+        return beReady(res,username)
+    })
+    .catch((err)=>{
+        console.log("Error:" + err)
+    })
+    .then(()=>{
+        return findReadyCount()
+    })
+    .catch((err)=>{
+        console.log("Error:" + err)
+    })
+    .then((data)=>{
+        console.log('countReady:'+data)
+        return findPlayerCount(data)
+    })
+
+
 })
 
 router.post('/cancelReady',function(req,res){

@@ -61,9 +61,10 @@ export default {
             seatNum:100,
             score:10000,
             username:'lzl',
-            ready:false,
-            bottomPokersFlag:false,
-            readyShow:true
+            // ready:false,
+            // readyShow:true,
+            // bottomPokersFlag:false,
+            
         }
     },
     methods:{
@@ -74,6 +75,11 @@ export default {
                 }).then((response=>{
                     // 要求退出响应正确回调
                     localStorage.removeItem('username')
+                    localStorage.removeItem('bottomPoker0')
+                    localStorage.removeItem('bottomPoker1')
+                    localStorage.removeItem('ready')
+                    localStorage.removeItem('readyShow')
+                    localStorage.removeItem('bottomPokersFlag')
                     alert(response.body.msg)
                     this.$router.push('/')
                 }),(response)=>{
@@ -83,8 +89,9 @@ export default {
             }  
         },  
         readyFunc:function(elem){
-            if(this.ready){
-                this.ready=false
+            if(this.ready!=='false'){
+                console.log('取消准备')
+                localStorage.setItem('ready',false)
                 elem.target.innerText='准备'
                 this.$http.post('/api/cancelReady',{
                     username:this.username
@@ -96,7 +103,9 @@ export default {
                     }
                 })
             }else{
-                this.ready=true
+                console.log('准备')
+                console.log(localStorage.ready)
+                localStorage.setItem('ready',true)
                 elem.target.innerText='取消准备'
                 this.$http.post('/api/ready',{
                     username:this.username
@@ -119,7 +128,28 @@ export default {
         }
     },
     computed:{
-
+        ready:function(){
+            console.log('computed:localStorage.ready')
+            return localStorage.ready
+        },
+        readyShow:function(){
+            return localStorage.readyShow
+        },
+        bottomPokersFlag:function(){
+            return localStorage.bottomPokersFlag
+        },
+    },
+    beforeCreate:function(){
+        console.log('beforeCreate:localStorage.ready')
+        if(!localStorage.ready){
+            localStorage.setItem('ready',false)
+        }
+        if(!localStorage.readyShow){
+            localStorage.setItem('readyShow',true)
+        }
+        if(!localStorage.bottomPokersFlag){
+            localStorage.setItem('bottomPokersFlag',false)
+        }
     },
     created:function(){
         
@@ -168,8 +198,8 @@ export default {
     },
     sockets:{
         bottomPokers:function(data){
-            this.readyShow=false
-            this.bottomPokersFlag=true
+            localStorage.setItem('readyShow',false)
+            localStorage.setItem('bottomPokersFlag',true)
             let bottomPokers=data
             console.log(bottomPokers)
             localStorage.setItem('bottomPoker0',bottomPokers[0])
