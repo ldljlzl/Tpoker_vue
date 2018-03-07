@@ -170,4 +170,5 @@ ready:function(elem){
 // 一般来说，v-if 有更高的切换开销，而 v-show 有更高的初始渲染开销。因此，如果需要非常频繁地切换，则使用 v-show 较好；如果在运行时条件很少改变，则使用 v-if 较好。
 
 19.Boolean
-Boolean('false')为true
+Boolean('false')或者[]为true
+

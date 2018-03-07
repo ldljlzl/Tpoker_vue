@@ -5,12 +5,13 @@
                 <img src="../assets/img/user.png" class="user" alt="user">
                 <span>{{this.username}}</span>
             </div>
-            <div class="middlePanelPerson" v-if="ready">
+            <div class="middlePanelPerson" v-if="readyShowFlag">
                 <img :src="srcLeft" class="pokerLeft " >
                 <img :src="srcRight" class="pokerRight" >
             </div>
-            <div class="middlePanelPerson" v-if="!ready">
-                <div class="noReady">未准备</div>
+            <div class="middlePanelPerson" v-if="!readyShowFlag">
+                <div class="noReady" v-if="!ready">未准备</div>
+                <div class="noReady" v-if="ready">已准备</div>
             </div>
             <div class="bottomPanelPerson">
                 <img class="gold" src="../assets/img/gold.png" alt="gold">
@@ -34,15 +35,15 @@ export default {
           default:function(){
               return{
                   username:'',
-                  score:0
+                  score:0,
+                  readyFlag:false
               }
           }
-      }
-
+      },
+      beginFlag:Boolean
   },
   data:function(){
       return {
-        ready:false, 
         pokerDefault:'pokerBack',
       }
   },
@@ -61,7 +62,13 @@ export default {
       },
       flag:function(){
           return Boolean(this.userinfo.username)
-      }
+      },
+      readyShowFlag:function(){
+          return this.beginFlag
+      },
+      ready:function(){
+          return this.userinfo.readyFlag
+      },
   }
 }
 </script>

@@ -2,23 +2,23 @@
 
   <div class="room">
     <div class="readyDiv">
-        <el-button type="primary" round @click="readyFunc" v-show="readyShow">准备</el-button>
+        <el-button type="primary" round @click="readyFunc" v-show="flag.readyShow">准备</el-button>
     </div>
     <div class="seats">
         <div class="seat one" >
-            <player :userinfo="player1">  </player>  
+            <player :userinfo="player1" :begin-flag="flag.bottomPokersFlag">  </player>  
         </div>
         <div class="seat two" >
-            <player :userinfo="player2">  </player> 
+            <player :userinfo="player2" :begin-flag="flag.bottomPokersFlag">  </player> 
         </div>
         <div class="seat three" >
-            <player :userinfo="player3">  </player> 
+            <player :userinfo="player3" :begin-flag="flag.bottomPokersFlag">  </player> 
         </div>
         <div class="seat four" >
-            <player :userinfo="player4">  </player> 
+            <player :userinfo="player4" :begin-flag="flag.bottomPokersFlag">  </player> 
         </div>
         <div class="seat five" >
-            <player :userinfo="player5">  </player> 
+            <player :userinfo="player5" :begin-flag="flag.bottomPokersFlag">  </player> 
         </div>
     </div>
 
@@ -37,8 +37,8 @@
                 </div>
             </div>
             <div class="right">
-                <img class="card" src="../assets/img/0.jpg" id="poker0" v-show="bottomPokersFlag">
-                <img class="card" src="../assets/img/0.jpg" id="poker1"  v-show="bottomPokersFlag">
+                <img class="card" src="../assets/img/0.jpg" id="poker0" v-show="flag.bottomPokersFlag">
+                <img class="card" src="../assets/img/0.jpg" id="poker1"  v-show="flag.bottomPokersFlag">
             </div>
                 
         </div>
@@ -61,9 +61,12 @@ export default {
             seatNum:100,
             score:10000,
             username:'lzl',
-            // ready:false,
-            // readyShow:true,
-            // bottomPokersFlag:false,
+            flag:{
+                ready:false,
+                readyShow:true,
+                bottomPokersFlag:false
+            }
+                
             
         }
     },
@@ -77,9 +80,7 @@ export default {
                     localStorage.removeItem('username')
                     localStorage.removeItem('bottomPoker0')
                     localStorage.removeItem('bottomPoker1')
-                    localStorage.removeItem('ready')
-                    localStorage.removeItem('readyShow')
-                    localStorage.removeItem('bottomPokersFlag')
+                    localStorage.removeItem('flag')
                     alert(response.body.msg)
                     this.$router.push('/')
                 }),(response)=>{
@@ -89,9 +90,14 @@ export default {
             }  
         },  
         readyFunc:function(elem){
-            if(this.ready!=='false'){
+            console.log(this.flag)
+            console.log(localStorage.flag)
+            let flag=JSON.parse(localStorage.flag)
+            if(this.flag.ready){
                 console.log('取消准备')
-                localStorage.setItem('ready',false)
+                flag.ready=false
+                this.flag.ready=false
+                localStorage.setItem('flag',JSON.stringify(flag))
                 elem.target.innerText='准备'
                 this.$http.post('/api/cancelReady',{
                     username:this.username
@@ -103,18 +109,22 @@ export default {
                     }
                 })
             }else{
-                console.log('准备')
-                console.log(localStorage.ready)
-                localStorage.setItem('ready',true)
-                elem.target.innerText='取消准备'
+                let _this=this 
                 this.$http.post('/api/ready',{
                     username:this.username
                 }).then((response)=>{
                     if(response.body.status===2){
+                        flag.ready=true
+                        _this.flag.ready=true
+                        localStorage.setItem('flag',JSON.stringify(flag))
+                        elem.target.innerText='取消准备'
                         console.log('准备成功')
                     }else{
-                        console.log('准备失败')
+                        alert(response.body.msg)
                     }
+                    
+                    
+                    
                 })
             }
         },
@@ -127,32 +137,24 @@ export default {
             bottomPoker1.src=src1 
         }
     },
-    computed:{
-        ready:function(){
-            console.log('computed:localStorage.ready')
-            return localStorage.ready
-        },
-        readyShow:function(){
-            return localStorage.readyShow
-        },
-        bottomPokersFlag:function(){
-            return localStorage.bottomPokersFlag
-        },
-    },
-    beforeCreate:function(){
-        console.log('beforeCreate:localStorage.ready')
-        if(!localStorage.ready){
-            localStorage.setItem('ready',false)
-        }
-        if(!localStorage.readyShow){
-            localStorage.setItem('readyShow',true)
-        }
-        if(!localStorage.bottomPokersFlag){
-            localStorage.setItem('bottomPokersFlag',false)
-        }
-    },
     created:function(){
-        
+        if(localStorage.flag){
+            let flag=JSON.parse(localStorage.flag)
+            if(flag.ready){
+                // console.log('beforeCreate:localStorage.ready存在')
+                this.flag.ready=flag.ready
+            }else{
+                // console.log('beforeCreate：localStorage.ready不存在')
+            }
+            if(flag.readyShow){
+                this.flag.readyShow=flag.readyShow
+            }
+            if(flag.bottomPokersFlag){
+                this.flag.bottomPokersFlag=flag.bottomPokersFlag
+            }
+        }else{
+            localStorage.setItem('flag',JSON.stringify(this.flag))
+        }
         let _this=this
         this.$http.get('/api/getPlayers').then((response)=>{
             // 响应正确回调
@@ -198,8 +200,12 @@ export default {
     },
     sockets:{
         bottomPokers:function(data){
-            localStorage.setItem('readyShow',false)
-            localStorage.setItem('bottomPokersFlag',true)
+            this.flag.readyShow=false
+            this.flag.bottomPokersFlag=true
+            let flag=JSON.parse(localStorage.flag)
+            flag.readyShow=false
+            flag.bottomPokersFlag=true
+            localStorage.setItem('flag',JSON.stringify(flag))
             let bottomPokers=data
             console.log(bottomPokers)
             localStorage.setItem('bottomPoker0',bottomPokers[0])

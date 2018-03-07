@@ -61,16 +61,10 @@ console.log('success listen3000…………')
 
 
 let sockets=[]
-// myEmitter.on('event', () => {
-//   console.log('触发了一个事件！')
-// });
-// myEmitter.emit('event')
 
 socket(io,sockets)
 
-// myEmitter.on('begin',()=>{
 
-// })
 
 let actionPerson=new ActionPerson({
     actionPosition:0

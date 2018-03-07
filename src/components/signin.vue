@@ -37,7 +37,7 @@
         }).then((response)=>{
           alert(response.body.msg)
           if(response.body.status===2){
-            //status=2时注册成功
+            //status=2时登录成功
             localStorage.setItem('username',response.body.username)
             this.$router.push('room')
           }

@@ -6,6 +6,7 @@ function socket(io,sockets){
     myEmitter.on('Perflop',(data)=>{
         console.log('emit Perflop')
         let personnalPoker=data.personnalPoker
+        console.log(personnalPoker)
         sockets.map((userinfo)=>{
             let seatNum=userinfo.seatNum
             let socketId=userinfo.socketId
