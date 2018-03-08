@@ -37,8 +37,8 @@
                 </div>
             </div>
             <div class="right">
-                <img class="card" src="../assets/img/0.jpg" id="poker0" v-show="flag.bottomPokersFlag">
-                <img class="card" src="../assets/img/0.jpg" id="poker1"  v-show="flag.bottomPokersFlag">
+                <img class="card" :src="srcBottomPoker0" id="poker0" v-show="flag.bottomPokersFlag">
+                <img class="card" :src="srcBottomPoker1" id="poker1"  v-show="flag.bottomPokersFlag">
             </div>
                 
         </div>
@@ -65,9 +65,25 @@ export default {
                 ready:false,
                 readyShow:true,
                 bottomPokersFlag:false
-            }
+            },
+            bottomPoker0:'pokerBack',
+            bottomPoker1:'pokerBack',
+            //我的押注
+            myBet:0,
+            //底池
+            Pot:0,
+            //盲注
+            blind:10,
                 
             
+        }
+    },
+    computed:{
+        srcBottomPoker0:function(){
+            return require("../assets/img/"+this.bottomPoker0+".jpg")
+        },
+        srcBottomPoker1:function(){
+            return require("../assets/img/"+this.bottomPoker1+".jpg")
         }
     },
     methods:{
@@ -122,9 +138,6 @@ export default {
                     }else{
                         alert(response.body.msg)
                     }
-                    
-                    
-                    
                 })
             }
         },
@@ -140,17 +153,12 @@ export default {
     created:function(){
         if(localStorage.flag){
             let flag=JSON.parse(localStorage.flag)
-            if(flag.ready){
-                // console.log('beforeCreate:localStorage.ready存在')
-                this.flag.ready=flag.ready
-            }else{
-                // console.log('beforeCreate：localStorage.ready不存在')
-            }
-            if(flag.readyShow){
-                this.flag.readyShow=flag.readyShow
-            }
+            this.flag.ready=flag.ready
+            this.flag.readyShow=flag.readyShow
+            this.flag.bottomPokersFlag=flag.bottomPokersFlag
             if(flag.bottomPokersFlag){
-                this.flag.bottomPokersFlag=flag.bottomPokersFlag
+                this.bottomPoker0=localStorage.bottomPoker0
+                this.bottomPoker1=localStorage.bottomPoker1
             }
         }else{
             localStorage.setItem('flag',JSON.stringify(this.flag))
@@ -210,10 +218,19 @@ export default {
             console.log(bottomPokers)
             localStorage.setItem('bottomPoker0',bottomPokers[0])
             localStorage.setItem('bottomPoker1',bottomPokers[1])
-            this.$options.methods.sendBottomPokers()
-             
-
+            this.$options.methods.sendBottomPokers() 
         },
+        action:function(smallBlindPosition){
+            if(this.seatNum===smallBlindPosition){
+                this.myBet=this.blind
+                this.$socket.emit('actionOver', {status:0,num:this.blind});
+            }else if(this.seatNum===(smallBlindPosition+1)){
+                this.myBet=this.blind*2
+                this.$socket.emit('actionOver', {status:0,num:this.blind*2});
+            }else{
+
+            }
+        }
     },
 }
 </script>

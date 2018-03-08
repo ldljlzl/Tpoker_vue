@@ -1,22 +1,21 @@
 const Message=require('./model/message')
-
 const myEmitter=require('./emitter')
 
-function socket(io,sockets){
+const perflop=require('./perflop')
+
+function socket(io,playerList){
     myEmitter.on('Perflop',(data)=>{
         console.log('emit Perflop')
         let personnalPoker=data.personnalPoker
-        console.log(personnalPoker)
-        sockets.map((userinfo)=>{
+        playerList.map((userinfo)=>{
             let seatNum=userinfo.seatNum
             let socketId=userinfo.socketId
             let bottomPokers=personnalPoker.filter((elem)=>{
                 return elem.seatNum===seatNum
             })[0].bottomPokers
-            console.log('bottomPokers:'+bottomPokers)
             if(io.sockets.connected[socketId]){
-                console.log(bottomPokers)
-                io.sockets.connected[socketId].emit('bottomPokers',bottomPokers);
+                io.sockets.connected[socketId].emit('bottomPokers',bottomPokers)
+                perflop(playerList,io)
             }
         })
     })
@@ -26,20 +25,22 @@ function socket(io,sockets){
             let userinfo= {
                 socketId:socketIo.id,
                 seatNum:data.seatNum,
+                socketIo:socketIo,
+                betNum:0
             }
-            if(sockets.length!==0){
+            if(playerList.length!==0){
                 let existFlag=true
-                sockets.forEach((elem)=>{
+                playerList.forEach((elem)=>{
                     if(elem.seatNum===userinfo.seatNum){
                         existFlag=false
                         elem.socketId=userinfo.socketId
                     }
                 })
                 if(existFlag){
-                    sockets.push(userinfo)
+                    playerList.push(userinfo)
                 }
             }else{
-                sockets.push(userinfo)
+                playerList.push(userinfo)
             }
                 
             

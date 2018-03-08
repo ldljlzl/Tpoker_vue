@@ -10,7 +10,7 @@ const cookieParser=require('cookie-parser')
 const socket=require('./socket')
 const myEmitter=require('./emitter')
 
-const ActionPerson=require('./model/actionPerson')
+const BlindsPosition=require('./model/blindsPosition')
 
 let app=express()
 
@@ -60,16 +60,17 @@ console.log('success listen3000…………')
 
 
 
-let sockets=[]
+let playerList=[]
 
-socket(io,sockets)
+socket(io,playerList)
 
 
 
-let actionPerson=new ActionPerson({
-    actionPosition:0
+let blindsPosition=new BlindsPosition({
+    smallBlindPosition:0,
+    bigBlindPosition:1
 })
-actionPerson.save(function(err,res){
+blindsPosition.save(function(err,res){
     if(err){
         console.log('初始化开始位置失败')
     }

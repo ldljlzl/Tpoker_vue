@@ -17,7 +17,6 @@ router.post('/register',function(req,res,next){
         if(err){
             console.log("error: "+err)
             _res.send({status:0,msg:'查找是否是已注册账号失败'})
-            return
         }
         else{
             if(!res){
@@ -29,12 +28,10 @@ router.post('/register',function(req,res,next){
                     if(err){
                         console.log('存入数据失败')
                         _res.send({status:1,msg:'注册失败'})
-                        return
                     }
                     else{
                         console.log('存入数据成功')
                         _res.send({status:2,msg:'注册成功'})
-                        return
                     }
                 })
             }
@@ -42,88 +39,122 @@ router.post('/register',function(req,res,next){
                 console.log('已经存在该账号')     
                 console.log("res: "+res)
                 _res.send({status:3,msg:'已经存在该账号'})    
-                return 
             }
         }
     })
 })
 
 router.post('/signin',function(req,res){
-    let account=req.body.account
-    let password=req.body.password
-    let _res=res
-    Player.findOne({username:account},(err,res)=>{
-        if(err){
-            console.log("error: "+err)
-            _res.send({status:0,msg:'查找数据库失败'})
-            return
-        }else{
-            if(res){
-                _res.send({status:5,msg:'该用户已登录'})
-                return
-            }else{
-                User.findOne({account:account,password:password},function(err,res){
+    let username=req.body.account
+    let password=req.body.password;
+    // let _res=res
+    (function(data){
+        let p=new Promise((resolve)=>{
+            Player.findOne({username:username},(err,res)=>{
+                if(err){
+                    console.log("Error:" + err)
+                    data._res.send({status:0,msg:'查找数据库失败'})
+                }else{
+                    if(res){
+                        data._res.send({status:5,msg:'该用户已登录'})
+                    }else{
+                        resolve(data)
+                    } 
+                }
+            })
+        })
+        return p
+    })({_res:res,username:username,password:password})
+    .then((data)=>{
+        return (function(data){
+            let p=new Promise((resolve)=>{
+                let username=data.username
+                let password=data.password
+                let _res=data._res
+                User.findOne({account:username,password:password},(err,res)=>{
                     if(err){
                         console.log("error: "+err)
                         _res.send({status:0,msg:'查找数据库失败'})
-                        return
-                    }
-                    else{
+                    }else{
                         if(res){
-                            
-                            _res2=res
-                            if(!res.isAdmin){  
-                                _res.cookie('userinfo',{username:account,isAdmin:false},{expires:new Date(Date.now()+60*60*24*1000)}) 
-                                let score=_res2.score  
-                                let seatArr=[0,1,2,3,4,5]
-                                let seatNum=0
-                                Player.find({},function(err,res){
-                                    if(err){
-                                        console.log("Error:" + err);
-                                    }else{
-                                        if(res){
-                                            res.map(function(item){
-                                                seatArr.splice(seatArr.indexOf     (item.seatNum),1)
-                                            })
-                                        }
-                                        seatNum=seatArr[Math.floor(Math.random()*seatArr.length)]
-                                        let player=new Player({
-                                            username:account,
-                                            score:score,
-                                            seatNum:seatNum,
-                                            readyFlag:false
-                                        })
-                                        player.save(function(err,res){
-                                            if(err){
-                                                console.log('读取大厅用户列表失败')
-                                                _res.send({status:1,msg:'读取大厅用户列表失败'})
-                                                return
-                                            }
-                                            else{
-                                                console.log('读取大厅用户列表成功')
-                                                _res.send({status:2,msg:'登录成功',username:account})
-                                                return
-                                            }
-                                        })
-                                    }
-                                }) 
-                                return   
+                            let _res2=res
+                            if(!res.isAdmin){
+                                _res.cookie('userinfo',{username:username,isAdmin:false},{expires:new Date(Date.now()+60*60*24*1000)}) 
+                                resolve({
+                                    username:username,
+                                    password:password,
+                                    _res:_res,
+                                    _res2:_res2,
+                                })
                             }else{
-                                _res.cookie('userinfo',{username:account,isAdmin:true},{expires:new Date(Date.now()+60*60*24*1000)})
+                                _res.cookie('userinfo',{username:username,isAdmin:true},{expires:new Date(Date.now()+60*60*24*1000)})
                                 _res.send({status:3,msg:'管理员登录成功'})
-                                return
-                            }  
-                            
+                            }
                         }else{
-                        _res.send({status:4,msg:'账号或密码错误'})
-                            return 
-                        }                          
+                            data._res.send({status:4,msg:'账号或密码错误'})
+                        } 
                     }
                 })
-            }
-        }
-    })                
+            })
+            return p
+        })(data)
+    })
+    .then((data)=>{
+        return (function(data){
+            let p=new Promise((resolve)=>{
+                let seatArr=[0,1,2,3,4,5]
+                let seatNum=0
+                Player.find({},(err,res)=>{
+                    if(err){
+                        console.log("Error:" + err);
+                    }else{
+                        if(res.length>1){
+                            res.map(function(item){
+                                seatArr.splice(seatArr.indexOf(item.seatNum),1)
+                            })
+                            seatNum=seatArr[Math.floor(Math.random()*seatArr.length)]
+                        }else if(res.length===0){
+                            seatNum=0
+                        }else if(res.length===1){
+                            seatNum=1
+                        }else{
+                            console.log('选座出错')
+                            return
+                        }
+                        let player=new Player({
+                            username:data.username,
+                            score:data._res2.score,
+                            seatNum:seatNum,
+                            readyFlag:false
+                        })    
+                        resolve({
+                            username:data.username,
+                            _res:data._res,
+                            player:player
+                        })
+                    }
+                })
+            })
+            return p
+        })(data)
+    })
+    .then((data)=>{
+        return (function(data){
+            let p=new Promise((resolve)=>{
+                data.player.save(function(err,res){
+                    if(err){
+                        console.log('读取大厅用户列表失败')
+                        data._res.send({status:1,msg:'读取大厅用户列表失败'})
 
+                    }else{
+                        console.log('读取大厅用户列表成功')
+                        data._res.send({status:2,msg:'登录成功',username:data.username})
+                    }
+                })
+            })
+            return p
+        })(data)
+    })
 })
 
 router.get('/getPlayers',function(req,res){
@@ -206,12 +237,12 @@ function findPlayerCount(countReady){
             if(err){
                 reject(err)
             }else{
-                if(countReady===res){
-                    console.log('所有玩家已经准备')
+                if((countReady===res)&&(countReady>1)){
+                    console.log('所有玩家已经准备，游戏开始')
                     beginFlag=true
                     gameBegin()
                 }else{
-                    console.log('有玩家还未准备')
+                    console.log('有玩家还未准备或人数不足两人')
                 }
             }
         })
@@ -246,10 +277,7 @@ router.post('/ready',function(req,res){
             console.log('countReady:'+data)
             return findPlayerCount(data)
         })
-    }
-        
-
-
+    }        
 })
 
 router.post('/cancelReady',function(req,res){
