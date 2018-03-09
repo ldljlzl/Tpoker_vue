@@ -61,21 +61,37 @@ console.log('success listen3000…………')
 
 
 let playerList=[]
+let finalPlayers=[]
 
-socket(io,playerList)
+socket(io,playerList,finalPlayers)
 
+myEmitter.on("deleteSocket",(seatNum)=>{
+    let _index
+    playerList.forEach((elem,index)=>{
+        if(elem.seatNum===seatNum){
+            _index=index
+        }
+    })
+    playerList.splice(_index,1)
+})
 
 
 let blindsPosition=new BlindsPosition({
     smallBlindPosition:0,
     bigBlindPosition:1
 })
-blindsPosition.save(function(err,res){
-    if(err){
-        console.log('初始化开始位置失败')
-    }
-    else{
-        console.log('初始化开始位置成功')
+
+BlindsPosition.findOne({},(err,res)=>{
+    if(!res){
+        blindsPosition.save(function(err,res){
+            if(err){
+                console.log('初始化开始位置失败')
+            }
+            else{
+                console.log('初始化开始位置成功')
+            }
+        })
     }
 })
 
+        

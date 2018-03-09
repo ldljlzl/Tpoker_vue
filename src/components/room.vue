@@ -26,8 +26,15 @@
         <button @click="signout">退出房间</button>
     </div>
     
-    <div class="bottom">
-        
+    <div class="bottom" >
+        <div class="actionPanel" v-if="flag.actionPanel">
+            <el-button type="primary" :disabled="disabled.Check" round @click="checkFunc" >让牌</el-button>    
+            <el-button type="primary" :disabled="disabled.Fold" round @click="foldFunc" >弃牌</el-button>     
+            <el-button type="primary" :disabled="disabled.Call" round @click="callFunc" >跟住</el-button>   
+            <el-button type="primary" :disabled="disabled.Raise" round @click="raiseFunc" >加倍</el-button>  
+            <el-button type="primary" :disabled="disabled.AllIn" round @click="allInFunc" >all in</el-button>       
+        </div>
+        <div class="actionTime" v-show="actionTime.show">{{this.actionTime.time}}</div>
         <div class="myseat" >
             <div class="left">
                 <span>{{this.username}}</span>
@@ -37,8 +44,11 @@
                 </div>
             </div>
             <div class="right">
-                <img class="card" :src="srcBottomPoker0" id="poker0" v-show="flag.bottomPokersFlag">
-                <img class="card" :src="srcBottomPoker1" id="poker1"  v-show="flag.bottomPokersFlag">
+                <div class="myBet">{{this.myBet}}</div>
+                <div>
+                    <img class="card" :src="srcBottomPoker0" id="poker0" v-show="flag.bottomPokersFlag">
+                    <img class="card" :src="srcBottomPoker1" id="poker1"  v-show="flag.bottomPokersFlag">
+                </div>
             </div>
                 
         </div>
@@ -64,7 +74,19 @@ export default {
             flag:{
                 ready:false,
                 readyShow:true,
-                bottomPokersFlag:false
+                bottomPokersFlag:false,
+                actionPanel:false
+            },
+            disabled:{
+                Check:false,
+                Fold:false,
+                Call:false,
+                Raise:false,
+                AllIn:false,
+            },
+            actionTime:{
+                time:10,
+                show:false
             },
             bottomPoker0:'pokerBack',
             bottomPoker1:'pokerBack',
@@ -74,7 +96,10 @@ export default {
             Pot:0,
             //盲注
             blind:10,
-                
+            //上个玩家的押注
+            lastBet:0,
+            //定时器
+            timer:{}   
             
         }
     },
@@ -90,7 +115,8 @@ export default {
         signout:function(){
             if(confirm("确定要退出房间吗？")){
                 this.$http.post('/api/signout',{
-                    username:localStorage.username
+                    username:localStorage.username,
+                    seatNum:this.seatNum
                 }).then((response=>{
                     // 要求退出响应正确回调
                     localStorage.removeItem('username')
@@ -106,8 +132,6 @@ export default {
             }  
         },  
         readyFunc:function(elem){
-            console.log(this.flag)
-            console.log(localStorage.flag)
             let flag=JSON.parse(localStorage.flag)
             if(this.flag.ready){
                 console.log('取消准备')
@@ -148,14 +172,85 @@ export default {
             let src1='../static/img/'+localStorage.bottomPoker1+'.jpg'
             bottomPoker0.src=src0
             bottomPoker1.src=src1 
+        },
+        checkFunc:function(){
+            //代写
+            this.$socket.emit('actionOver', {status:3,num:this.lastBet});
+        },
+        callFunc:function(){
+            this.myBet+=this.lastBet
+            this.score-=this.lastBet
+            this.$socket.emit('actionOver', {status:1,num:this.lastBet});
+        },
+        foldFunc:function(){
+            //代写
+            this.$socket.emit('actionOver', {status:2,num:this.lastBet});
+        },
+        raiseFunc:function(){
+            this.myBet=this.myBet+this.lastBet*2
+            this.score=this.myBet-this.lastBet*2
+            this.$socket.emit('actionOver', {status:1,num:this.lastBet*2});
+        },
+        AllInFunc:function(){
+            this.$socket.emit('actionOver', {status:4,num:this.score});
+            this.myBet+=this.score
+            this.score=0
+        },
+        getPlayers:function(){
+            let _this=this
+            this.$http.get('/api/getPlayers').then((response)=>{
+                // 响应正确回调
+                if(response.body.status===2){
+                    let players=response.body.playersInRoom
+                    players.forEach(function(item){
+                        if(item.username===localStorage.username){
+                            //函数中this指向发生变化
+                            _this.username=item.username
+                            _this.seatNum=item.seatNum
+                            _this.score=item.score
+                            _this.$socket.emit('sendSeatNum',{
+                                seatNum:_this.seatNum,
+                            })
+                        }
+                    })
+                    _this.player1={}
+                    _this.player2={}
+                    _this.player3={}
+                    _this.player4={}
+                    _this.player5={}
+                    players.filter((item)=>(item.username!==localStorage.username)).forEach(function(item){
+                        if(item.seatNum===(_this.seatNum+1)%6){
+                            _this.player1=item
+                        }else if(item.seatNum===(_this.seatNum+2)%6){
+                            _this.player2=item
+                        }else if(item.seatNum===(_this.seatNum+3)%6){
+                            _this.player3=item
+                        }else if(item.seatNum===(_this.seatNum+4)%6){
+                            _this.player4=item
+                        }else if(item.seatNum===(_this.seatNum+5)%6){
+                            _this.player5=item
+                        }else{
+                            alert(_this.seatNum)
+                            alert('排序出错')
+                        }
+                    })
+
+                }
+            },
+            (response)=>{
+                // 响应错误回调
+                alert('请求房间用户列表失败')
+            })
         }
     },
     created:function(){
+        
         if(localStorage.flag){
             let flag=JSON.parse(localStorage.flag)
             this.flag.ready=flag.ready
             this.flag.readyShow=flag.readyShow
             this.flag.bottomPokersFlag=flag.bottomPokersFlag
+            this.flag.actionPanel=flag.actionPanel
             if(flag.bottomPokersFlag){
                 this.bottomPoker0=localStorage.bottomPoker0
                 this.bottomPoker1=localStorage.bottomPoker1
@@ -163,71 +258,68 @@ export default {
         }else{
             localStorage.setItem('flag',JSON.stringify(this.flag))
         }
-        let _this=this
-        this.$http.get('/api/getPlayers').then((response)=>{
-            // 响应正确回调
-            if(response.body.status===2){
-                let players=response.body.playersInRoom
-                players.forEach(function(item){
-                    if(item.username===localStorage.username){
-                        //函数中this指向发生变化
-                        _this.username=item.username
-                        _this.seatNum=item.seatNum
-                        _this.score=item.score
-                        _this.$socket.emit('sendSeatNum',{
-                            seatNum:_this.seatNum,
-                        })
-                    }
-                })
-                players.filter((item)=>(item.username!==localStorage.username)).forEach(function(item){
-                    if(item.seatNum===(_this.seatNum+1)%6){
-                        _this.player1=item
-                    }else if(item.seatNum===(_this.seatNum+2)%6){
-                        _this.player2=item
-                    }else if(item.seatNum===(_this.seatNum+3)%6){
-                        _this.player3=item
-                    }else if(item.seatNum===(_this.seatNum+4)%6){
-                        _this.player4=item
-                    }else if(item.seatNum===(_this.seatNum+5)%6){
-                        _this.player5=item
-                    }else{
-                        alert(_this.seatNum)
-                        alert('排序出错')
-                    }
-                })
-
-            }
-        },
-        (response)=>{
-            // 响应错误回调
-            alert('请求房间用户列表失败')
-        })
+        this.getPlayers()
     },
     components:{
         player,chatroom
     },
     sockets:{
+        getPlayers:function(){
+            this.getPlayers()
+        },
         bottomPokers:function(data){
             this.flag.readyShow=false
             this.flag.bottomPokersFlag=true
+            this.flag.actionPanel=true
             let flag=JSON.parse(localStorage.flag)
             flag.readyShow=false
             flag.bottomPokersFlag=true
+            flag.actionPanel=true
             localStorage.setItem('flag',JSON.stringify(flag))
             let bottomPokers=data
             console.log(bottomPokers)
             localStorage.setItem('bottomPoker0',bottomPokers[0])
             localStorage.setItem('bottomPoker1',bottomPokers[1])
-            this.$options.methods.sendBottomPokers() 
+            this.sendBottomPokers() 
         },
-        action:function(smallBlindPosition){
-            if(this.seatNum===smallBlindPosition){
+        action:function(data){
+            console.log(data)
+            this.lastBet=data.lastBet
+            if(this.seatNum===data.smallBlindPosition){
+                console.log('小盲注')
                 this.myBet=this.blind
                 this.$socket.emit('actionOver', {status:0,num:this.blind});
-            }else if(this.seatNum===(smallBlindPosition+1)){
+            }else if(this.seatNum===(data.smallBlindPosition+1)){
+                console.log('大盲注')
                 this.myBet=this.blind*2
                 this.$socket.emit('actionOver', {status:0,num:this.blind*2});
             }else{
+                //点了操作面板，此timer失效
+                console.log('非大小盲注')
+                this.actionTime.show=true
+                this.timer=setInterval(function(){
+                    if(this.actionTime){
+                        this.actionTime--
+                    }else{
+                        this.actionTime=10
+                        this.actionTime.show=false
+                        this.flag.actionPanel=false
+                        clearInterval(this.timer)
+                    }
+                },1000)
+
+                this.flag.actionPanel=true
+                //如果筹码不足，使部分按钮失效
+                if(this.score<data.lastBet){
+                    this.disabled.call=true
+                }else if(this.score<data.lastBet*2){
+                    this.disabled.Raise=true
+                }else if(!foldFlag){
+                    this.disabled.Fold=false
+                }
+                else{
+                    //没想好
+                }
 
             }
         }
@@ -268,13 +360,13 @@ div.bottom{
 
 /*div.myseat调整*/
 div.myseat{
-    height: 100%;
+    height: 90%;
     width:25%;
-    background-color: red;
+    background:rgba(58,174,224,0.2);
     position: relative;
-    left:40%;
+    left:35%;
     display: flex;
-
+    border: 1px solid black
 }
 div.myseat div.left{
     display: block;
@@ -283,21 +375,30 @@ div.myseat div.left{
     display: flex;
     flex-direction: column;
     align-items:space-between;
+    padding-top: 5%;
 }
-/*myseat的left*/
 div.myseat div.right{
     display: block;
     height: 100%;
     width: 75%;
-    background-color: blue;
 }
 div.myScore{
     height: 20%;
+    margin-top: 15%;
+    /*margin-bottom: 5%;*/
 }
 div.myseat img.gold{
     height: 50%;
+    position: relative;
+    top: 8%;
 }
-/*myseat的right*/
+div.myBet{
+    margin-top: 2%;
+    margin-bottom: 3%;
+    font-size: 20px;
+    color: yellow
+}
+
 
 
 /*div.chatroom调整*/
@@ -305,37 +406,9 @@ div.chatroom{
     position: relative;
     bottom:20%;
     height: 120%;
-    width:25%;
-    /*background-color: red;*/
-    
+    width:25%;   
 }
-div.showMsg{
-    height: 87%;
-    background-color: #c6c2fe;
-    opacity: 0.4;
-    /*background-color: red;*/
-}
-div.inputMsg{
-    height: 13%;
-    opacity: 0.7;
-    background-color: #c3c3c3;
-    display: flex;
-}
-div.inputMsg el-input{
-    /*height: 120%;*/
-    width: 80%;
-    margin-bottom: 0;
-    padding-bottom: 0;
-}
-div.inputMsg el-button{
-    width: 20%;
-    opacity: 1;
-    height: 15px;
-}
-/*.lzl{
-    position: absolute;
-    height: 200px;
-}*/
+
 
 
 /*各个座位位置调整*/
@@ -382,11 +455,27 @@ div.signout button{
 div.readyDiv{
     position: absolute;
     top: 80%;
-    left:30%;
+    left:26%;
 }
 div.readyDiv button{
     height: 200%;
     width: 120%;
     font-size: 150%;
+}
+
+/*操作面板*/
+div.actionPanel{
+    position: absolute;
+    bottom:27%;
+    left:36%
+}
+
+/*剩余时间*/
+div.actionTime{
+    position: absolute;
+    bottom:27%;
+    left:62%;
+    font-size: 35px;
+    color:red;
 }
 </style>

@@ -3,9 +3,10 @@ const myEmitter=require('./emitter')
 
 const perflop=require('./perflop')
 
-function socket(io,playerList){
+function socket(io,playerList,finalPlayers){
     myEmitter.on('Perflop',(data)=>{
         console.log('emit Perflop')
+        // console.log(data)
         let personnalPoker=data.personnalPoker
         playerList.map((userinfo)=>{
             let seatNum=userinfo.seatNum
@@ -15,12 +16,17 @@ function socket(io,playerList){
             })[0].bottomPokers
             if(io.sockets.connected[socketId]){
                 io.sockets.connected[socketId].emit('bottomPokers',bottomPokers)
-                perflop(playerList,io)
+                perflop(playerList,io,finalPlayers)
             }
         })
     })
+    myEmitter.on("getPlayers",()=>{
+        io.sockets.emit("getPlayers")
+    })
+
     io.on('connection',function(socketIo){
-        console.log('connection')   
+        console.log('connection')
+        console.log(socketIo.id)
         socketIo.on('sendSeatNum',(data)=>{
             let userinfo= {
                 socketId:socketIo.id,

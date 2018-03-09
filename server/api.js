@@ -3,6 +3,7 @@ const User=require('./model/user')
 const Player=require('./model/player')
 
 const gameBegin=require('./gameBegin')
+const myEmitter=require('./emitter')
 
 let router=express.Router()
 
@@ -148,6 +149,7 @@ router.post('/signin',function(req,res){
 
                     }else{
                         console.log('读取大厅用户列表成功')
+                        myEmitter.emit("getPlayers")
                         data._res.send({status:2,msg:'登录成功',username:data.username})
                     }
                 })
@@ -172,12 +174,15 @@ router.get('/getPlayers',function(req,res){
 router.post('/signout',function(req,res){
     _res=res
     let username=req.body.username
+    let seatNum=req.body.seatNum
     Player.remove({username:username},function(err,res){
         if(err){
             console.log("Error:" + err)
             _res.send({status:0,msg:'退出房间失败'})
         }else{
             console.log('删除player成功')
+            myEmitter.emit("getPlayers")
+            myEmitter.emit("deleteSocket",seatNum)
             _res.send({status:2,msg:'退出房间成功'})
         }
     }) 
@@ -212,6 +217,7 @@ function beReady(data){
             }else{
                 console.log('准备成功')
                 _res.send({status:2,msg:'准备成功'})
+                myEmitter.emit('getPlayers')
                 resolve()
             }
         })
@@ -232,22 +238,21 @@ function findReadyCount(){
     return p
 }
 function findPlayerCount(countReady){
-    let p=new Promise((resolve,reject)=>{
-        Player.count({},(err,res)=>{
-            if(err){
-                reject(err)
+
+    Player.count({},(err,res)=>{
+        if(err){
+            reject(err)
+        }else{
+            if((countReady===res)&&(countReady>1)){
+                console.log('所有玩家已经准备，游戏开始')
+                beginFlag=true
+                gameBegin()
             }else{
-                if((countReady===res)&&(countReady>1)){
-                    console.log('所有玩家已经准备，游戏开始')
-                    beginFlag=true
-                    gameBegin()
-                }else{
-                    console.log('有玩家还未准备或人数不足两人')
-                }
+                console.log('有玩家还未准备或人数不足两人')
             }
-        })
+        }
     })
-    return p
+
 }
 
 
@@ -275,7 +280,7 @@ router.post('/ready',function(req,res){
         })
         .then((data)=>{
             console.log('countReady:'+data)
-            return findPlayerCount(data)
+            findPlayerCount(data)
         })
     }        
 })
