@@ -18,6 +18,7 @@ router.post('/register',function(req,res,next){
         if(err){
             console.log("error: "+err)
             _res.send({status:0,msg:'查找是否是已注册账号失败'})
+            return
         }
         else{
             if(!res){
@@ -29,10 +30,12 @@ router.post('/register',function(req,res,next){
                     if(err){
                         console.log('存入数据失败')
                         _res.send({status:1,msg:'注册失败'})
+                        return
                     }
                     else{
                         console.log('存入数据成功')
                         _res.send({status:2,msg:'注册成功'})
+                        return
                     }
                 })
             }
@@ -40,6 +43,7 @@ router.post('/register',function(req,res,next){
                 console.log('已经存在该账号')     
                 console.log("res: "+res)
                 _res.send({status:3,msg:'已经存在该账号'})    
+                return
             }
         }
     })
@@ -55,9 +59,11 @@ router.post('/signin',function(req,res){
                 if(err){
                     console.log("Error:" + err)
                     data._res.send({status:0,msg:'查找数据库失败'})
+                    return
                 }else{
                     if(res){
                         data._res.send({status:5,msg:'该用户已登录'})
+                        return
                     }else{
                         resolve(data)
                     } 
@@ -76,6 +82,7 @@ router.post('/signin',function(req,res){
                     if(err){
                         console.log("error: "+err)
                         _res.send({status:0,msg:'查找数据库失败'})
+                        return
                     }else{
                         if(res){
                             let _res2=res
@@ -90,9 +97,11 @@ router.post('/signin',function(req,res){
                             }else{
                                 _res.cookie('userinfo',{username:username,isAdmin:true},{expires:new Date(Date.now()+60*60*24*1000)})
                                 _res.send({status:3,msg:'管理员登录成功'})
+                                return
                             }
                         }else{
                             data._res.send({status:4,msg:'账号或密码错误'})
+                            return
                         } 
                     }
                 })
@@ -109,18 +118,20 @@ router.post('/signin',function(req,res){
                     if(err){
                         console.log("Error:" + err);
                     }else{
-                        if(res.length>1){
-                            res.map(function(item){
-                                seatArr.splice(seatArr.indexOf(item.seatNum),1)
-                            })
-                            seatNum=seatArr[Math.floor(Math.random()*seatArr.length)]
-                        }else if(res.length===0){
+                        console.log('res:'+res)
+                        if(res.length===0){
                             seatNum=0
-                        }else if(res.length===1){
-                            seatNum=1
                         }else{
-                            console.log('选座出错')
-                            return
+                            for(let i=0;i<res.length;i++){
+                                seatArr.splice(seatArr.indexOf(res[i].seatNum),1)
+                            }
+                            if(seatArr[0]===0){
+                                seatNum=0
+                            }else if(seatArr[0]===1){
+                                seatNum=1
+                            }else{
+                                seatNum=seatArr[Math.floor(Math.random()*seatArr.length)]
+                            }
                         }
                         let player=new Player({
                             username:data.username,
@@ -131,7 +142,8 @@ router.post('/signin',function(req,res){
                         resolve({
                             username:data.username,
                             _res:data._res,
-                            player:player
+                            player:player,
+                            seatNum:seatNum
                         })
                     }
                 })
@@ -146,11 +158,12 @@ router.post('/signin',function(req,res){
                     if(err){
                         console.log('读取大厅用户列表失败')
                         data._res.send({status:1,msg:'读取大厅用户列表失败'})
-
+                        return
                     }else{
                         console.log('读取大厅用户列表成功')
-                        myEmitter.emit("getPlayers")
+                        myEmitter.emit("sendMyInfo",data.seatNum)
                         data._res.send({status:2,msg:'登录成功',username:data.username})
+                        return
                     }
                 })
             })
@@ -165,8 +178,10 @@ router.get('/getPlayers',function(req,res){
         if(err){
             console.log("Error:" + err)
             _res.send({status:0,msg:'查询大厅用户列表失败'})
+            return
         }else{
             _res.send({status:2,msg:'查询大厅用户列表成功',playersInRoom:res})
+            return
         }
     }) 
 })
@@ -179,11 +194,13 @@ router.post('/signout',function(req,res){
         if(err){
             console.log("Error:" + err)
             _res.send({status:0,msg:'退出房间失败'})
+            return
         }else{
             console.log('删除player成功')
-            myEmitter.emit("getPlayers")
+            myEmitter.emit("sendMyInfo",seatNum)
             myEmitter.emit("deleteSocket",seatNum)
             _res.send({status:2,msg:'退出房间成功'})
+            return
         }
     }) 
 })
@@ -191,6 +208,7 @@ router.post('/signout',function(req,res){
 function isReady(data){
     let _res=data._res
     let username=data.username
+    let seatNum=data.seatNum
     let p=new Promise((resolve,reject)=>{
         Player.find({username:username},(err,res)=>{
             if(err){
@@ -199,7 +217,7 @@ function isReady(data){
                 if(res[0].readyFlag){
                     console.log('用户已准备')
                 }else{
-                    resolve({_res:_res,username:username})
+                    resolve({_res:_res,username:username,seatNum:seatNum})
                 } 
             }
         })
@@ -209,16 +227,19 @@ function isReady(data){
 function beReady(data){
     let _res=data._res
     let username=data.username
+    let seatNum=data.seatNum
     let p=new Promise((resolve,reject)=>{
         Player.update({username:username},{readyFlag:true},(err,res)=>{
             if(err){
-                _res.send({status:0,msg:'准备失败'})
                 reject(err)
+                _res.send({status:0,msg:'准备失败'})
+                return
             }else{
                 console.log('准备成功')
-                _res.send({status:2,msg:'准备成功'})
-                myEmitter.emit('getPlayers')
+                myEmitter.emit('sendMyInfo',seatNum)
                 resolve()
+                _res.send({status:2,msg:'准备成功'})
+                return  
             }
         })
     })
@@ -260,9 +281,11 @@ router.post('/ready',function(req,res){
     if(beginFlag){
         console.log('游戏已经开始，等待下一局游戏')
         res.send({status:1,msg:'游戏已经开始，等待下一局游戏'})
+        return
     }else{
         let username=req.body.username 
-        isReady({_res:res,username:username})
+        let seatNum=req.body.seatNum 
+        isReady({_res:res,username:username,seatNum:seatNum})
         .catch((err)=>{
             console.log("Error:" + err)
         })
@@ -288,13 +311,17 @@ router.post('/ready',function(req,res){
 router.post('/cancelReady',function(req,res){
     _res=res
     let username=req.body.username
+    let seatNum=req.body.seatNum
     Player.update({username:username},{readyFlag:false},function(err,res){
         if(err){
             console.log("Error:" + err)
             _res.send({status:0,msg:'取消准备失败'})
+            return
         }else{
-            console.log('准备成功')
+            console.log('取消准备成功')
+            myEmitter.emit('sendMyInfo',seatNum)
             _res.send({status:2,msg:'取消准备成功'})
+            return
         }
     }) 
 })

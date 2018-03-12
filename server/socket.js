@@ -1,5 +1,6 @@
 const Message=require('./model/message')
 const myEmitter=require('./emitter')
+const Player=require('./model/player')
 
 const perflop=require('./perflop')
 
@@ -23,7 +24,33 @@ function socket(io,playerList,finalPlayers){
     myEmitter.on("getPlayers",()=>{
         io.sockets.emit("getPlayers")
     })
+    myEmitter.on("sendMyInfo",(seatNum)=>{
+        console.log('sendMyInfo')
+        Player.findOne({seatNum:seatNum},(err,res)=>{
+            if(err){
+                console.log(err)
+            }else{
+                let playerInfo=res
+                console.log('playerInfo:'+playerInfo)
+                let socketId=''
+                playerList.forEach((elem)=>{
+                    if(elem.seatNum===seatNum){
+                        socketId=elem.socketId
+                    }
+                })
+                if(io.sockets.connected[socketId]){
+                    console.log('io.sockets.connected[socketId]')
+                    if(playerInfo){
+                        io.sockets.connected[socketId].broadcast.emit('sendPlayerInfo',playerInfo)
+                    }else{
+                        io.sockets.connected[socketId].broadcast.emit('sendPlayerInfo',{seatNum:seatNum})
+                    }
+                    
+                }
+            }
 
+        })
+    })
     io.on('connection',function(socketIo){
         console.log('connection')
         console.log(socketIo.id)
@@ -32,7 +59,8 @@ function socket(io,playerList,finalPlayers){
                 socketId:socketIo.id,
                 seatNum:data.seatNum,
                 socketIo:socketIo,
-                betNum:0
+                betNum:0,
+                username:data.username
             }
             if(playerList.length!==0){
                 let existFlag=true

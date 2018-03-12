@@ -151,7 +151,8 @@ export default {
             }else{
                 let _this=this 
                 this.$http.post('/api/ready',{
-                    username:this.username
+                    username:this.username,
+                    seatNum:this.seatNum
                 }).then((response)=>{
                     if(response.body.status===2){
                         flag.ready=true
@@ -191,7 +192,7 @@ export default {
             this.score=this.myBet-this.lastBet*2
             this.$socket.emit('actionOver', {status:1,num:this.lastBet*2});
         },
-        AllInFunc:function(){
+        allInFunc:function(){
             this.$socket.emit('actionOver', {status:4,num:this.score});
             this.myBet+=this.score
             this.score=0
@@ -210,6 +211,7 @@ export default {
                             _this.score=item.score
                             _this.$socket.emit('sendSeatNum',{
                                 seatNum:_this.seatNum,
+                                username:item.username
                             })
                         }
                     })
@@ -270,11 +272,9 @@ export default {
         bottomPokers:function(data){
             this.flag.readyShow=false
             this.flag.bottomPokersFlag=true
-            this.flag.actionPanel=true
             let flag=JSON.parse(localStorage.flag)
             flag.readyShow=false
             flag.bottomPokersFlag=true
-            flag.actionPanel=true
             localStorage.setItem('flag',JSON.stringify(flag))
             let bottomPokers=data
             console.log(bottomPokers)
@@ -296,12 +296,13 @@ export default {
             }else{
                 //点了操作面板，此timer失效
                 console.log('非大小盲注')
+                console.log(this.actionTime)
                 this.actionTime.show=true
                 this.timer=setInterval(function(){
-                    if(this.actionTime){
-                        this.actionTime--
+                    if(this.actionTime.time>0){
+                        this.actionTime.time=this.actionTime.time-1
                     }else{
-                        this.actionTime=10
+                        this.actionTime.time=10
                         this.actionTime.show=false
                         this.flag.actionPanel=false
                         clearInterval(this.timer)
@@ -314,13 +315,34 @@ export default {
                     this.disabled.call=true
                 }else if(this.score<data.lastBet*2){
                     this.disabled.Raise=true
-                }else if(!foldFlag){
+                }else if(this.myBet===0){
                     this.disabled.Fold=false
                 }
                 else{
                     //没想好
                 }
 
+            }
+        },
+        sendPlayerInfo:function(playerInfo){
+            console.log(playerInfo)
+            let seatNum=playerInfo.seatNum
+            if(!playerInfo.username){
+                playerInfo={}
+            }
+            if(seatNum===(this.seatNum+1)%6){
+                this.player1=playerInfo
+            }else if(seatNum===(this.seatNum+2)%6){
+                this.player2=playerInfo
+            }else if(seatNum===(this.seatNum+3)%6){
+                this.player3=playerInfo
+            }else if(seatNum===(this.seatNum+4)%6){
+                this.player4=playerInfo
+            }else if(seatNum===(this.seatNum+5)%6){
+                this.player5=playerInfo
+            }else{
+                alert(this.seatNum)
+                alert('排序出错')
             }
         }
     },

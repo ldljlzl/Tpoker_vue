@@ -90,7 +90,7 @@
           alert(response.body.msg)
           if(response.body.status===2){
             //status=2时注册成功
-            this.$router.push({ path: 'login' })
+            this.$router.push({ path: 'signin' })
           }
         })
       }
