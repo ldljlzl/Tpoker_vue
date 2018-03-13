@@ -24,7 +24,8 @@ router.post('/register',function(req,res,next){
             if(!res){
                 let user=new User({
                     account:account,
-                    password:password
+                    password:password,
+                    score:100
                 })
                 user.save(function(err,res){
                     if(err){
@@ -161,8 +162,7 @@ router.post('/signin',function(req,res){
                         return
                     }else{
                         console.log('读取大厅用户列表成功')
-                        myEmitter.emit("sendMyInfo",data.seatNum)
-                        data._res.send({status:2,msg:'登录成功',username:data.username})
+                        data._res.send({status:2,msg:'登录成功',username:data.username,seatNum:data.seatNum})
                         return
                     }
                 })
@@ -266,7 +266,7 @@ function findPlayerCount(countReady){
         }else{
             if((countReady===res)&&(countReady>1)){
                 console.log('所有玩家已经准备，游戏开始')
-                beginFlag=true
+                // beginFlag=true
                 gameBegin()
             }else{
                 console.log('有玩家还未准备或人数不足两人')

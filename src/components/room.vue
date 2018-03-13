@@ -31,7 +31,7 @@
             <el-button type="primary" :disabled="disabled.Check" round @click="checkFunc" >让牌</el-button>    
             <el-button type="primary" :disabled="disabled.Fold" round @click="foldFunc" >弃牌</el-button>     
             <el-button type="primary" :disabled="disabled.Call" round @click="callFunc" >跟住</el-button>   
-            <el-button type="primary" :disabled="disabled.Raise" round @click="raiseFunc" >加倍</el-button>  
+            <el-button type="primary" :disabled="disabled.Raise" round @click="raiseFunc" >加注</el-button>  
             <el-button type="primary" :disabled="disabled.AllIn" round @click="allInFunc" >all in</el-button>       
         </div>
         <div class="actionTime" v-show="actionTime.show">{{this.actionTime.time}}</div>
@@ -78,7 +78,7 @@ export default {
                 actionPanel:false
             },
             disabled:{
-                Check:false,
+                Check:true,
                 Fold:false,
                 Call:false,
                 Raise:false,
@@ -174,25 +174,37 @@ export default {
             bottomPoker0.src=src0
             bottomPoker1.src=src1 
         },
+        actionOver:function(){
+            clearInterval(this.timer)
+            this.timer={}
+            this.actionTime.time=10
+            this.actionTime.show=false
+            this.flag.actionPanel=false
+        },
         checkFunc:function(){
+            this.actionOver()
             //代写
             this.$socket.emit('actionOver', {status:3,num:this.lastBet});
         },
         callFunc:function(){
-            this.myBet+=this.lastBet
-            this.score-=this.lastBet
+            this.actionOver()
+            this.score=this.score-(this.lastBet-this.myBet)
+            this.myBet=this.lastBet
             this.$socket.emit('actionOver', {status:1,num:this.lastBet});
         },
         foldFunc:function(){
+            this.actionOver()
             //代写
             this.$socket.emit('actionOver', {status:2,num:this.lastBet});
         },
         raiseFunc:function(){
-            this.myBet=this.myBet+this.lastBet*2
-            this.score=this.myBet-this.lastBet*2
-            this.$socket.emit('actionOver', {status:1,num:this.lastBet*2});
+            this.actionOver()
+            this.score=this.score-(this.lastBet+20-this.myBet)
+            this.myBet=this.lastBet+20 
+            this.$socket.emit('actionOver', {status:1,num:this.myBet});
         },
         allInFunc:function(){
+            this.actionOver()
             this.$socket.emit('actionOver', {status:4,num:this.score});
             this.myBet+=this.score
             this.score=0
@@ -209,10 +221,6 @@ export default {
                             _this.username=item.username
                             _this.seatNum=item.seatNum
                             _this.score=item.score
-                            _this.$socket.emit('sendSeatNum',{
-                                seatNum:_this.seatNum,
-                                username:item.username
-                            })
                         }
                     })
                     _this.player1={}
@@ -244,6 +252,7 @@ export default {
                 alert('请求房间用户列表失败')
             })
         }
+        
     },
     created:function(){
         
@@ -277,7 +286,6 @@ export default {
             flag.bottomPokersFlag=true
             localStorage.setItem('flag',JSON.stringify(flag))
             let bottomPokers=data
-            console.log(bottomPokers)
             localStorage.setItem('bottomPoker0',bottomPokers[0])
             localStorage.setItem('bottomPoker1',bottomPokers[1])
             this.sendBottomPokers() 
@@ -288,35 +296,34 @@ export default {
             if(this.seatNum===data.smallBlindPosition){
                 console.log('小盲注')
                 this.myBet=this.blind
+                this.score-=this.myBet
                 this.$socket.emit('actionOver', {status:0,num:this.blind});
             }else if(this.seatNum===(data.smallBlindPosition+1)){
                 console.log('大盲注')
                 this.myBet=this.blind*2
+                this.score-=this.myBet
                 this.$socket.emit('actionOver', {status:0,num:this.blind*2});
             }else{
                 //点了操作面板，此timer失效
                 console.log('非大小盲注')
-                console.log(this.actionTime)
                 this.actionTime.show=true
+                let _this=this
                 this.timer=setInterval(function(){
-                    if(this.actionTime.time>0){
-                        this.actionTime.time=this.actionTime.time-1
+                    if(_this.actionTime.time>0){
+                        _this.actionTime.time--
                     }else{
-                        this.actionTime.time=10
-                        this.actionTime.show=false
-                        this.flag.actionPanel=false
-                        clearInterval(this.timer)
+                        _this.actionOver()
                     }
                 },1000)
 
                 this.flag.actionPanel=true
                 //如果筹码不足，使部分按钮失效
-                if(this.score<data.lastBet){
-                    this.disabled.call=true
-                }else if(this.score<data.lastBet*2){
+                if((this.score+this.myBet)<data.lastBet){
+                    this.disabled.Call=true
+                }else if(this.score<(data.lastBet+20)){
                     this.disabled.Raise=true
-                }else if(this.myBet===0){
-                    this.disabled.Fold=false
+                }else if(this.myBet===data.lastBet){
+                    this.disabled.Check=false
                 }
                 else{
                     //没想好
@@ -325,7 +332,7 @@ export default {
             }
         },
         sendPlayerInfo:function(playerInfo){
-            console.log(playerInfo)
+            console.log('sendPlayerInfo中playerInfo:'+playerInfo)
             let seatNum=playerInfo.seatNum
             if(!playerInfo.username){
                 playerInfo={}

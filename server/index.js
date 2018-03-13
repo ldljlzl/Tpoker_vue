@@ -9,6 +9,8 @@ const cookieParser=require('cookie-parser')
 
 const socket=require('./socket')
 const myEmitter=require('./emitter')
+const perflop=require('./perflop')
+
 
 const BlindsPosition=require('./model/blindsPosition')
 
@@ -61,9 +63,29 @@ console.log('success listen3000…………')
 
 
 let playerList=[]
+// let playerList=[
+//     {
+//         socketId:socketIo.id,
+//         seatNum:0,
+//         socketIo:socketIo,
+//         betNum:0,
+//         username:1
+//     },
+//     {
+//         socketId:socketIo.id,
+//         seatNum:0,
+//         socketIo:socketIo,
+//         betNum:0,
+//         username:1
+//     }
+// ]
 let finalPlayers=[]
 
 socket(io,playerList,finalPlayers)
+
+myEmitter.on("perflop",()=>{
+    perflop(playerList,io,finalPlayers)
+})
 
 myEmitter.on("deleteSocket",(seatNum)=>{
     let _index
@@ -73,6 +95,7 @@ myEmitter.on("deleteSocket",(seatNum)=>{
         }
     })
     playerList.splice(_index,1)
+    
 })
 
 

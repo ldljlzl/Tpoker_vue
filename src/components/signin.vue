@@ -39,7 +39,13 @@
           if(response.body.status===2){
             //status=2时登录成功
             localStorage.setItem('username',response.body.username)
+            this.$socket.emit('addPlayer',{
+                seatNum:response.body.seatNum,
+                username:response.body.username
+            })
             this.$router.push('room')
+          }else{
+            alert(response.body.status)
           }
         })
       }

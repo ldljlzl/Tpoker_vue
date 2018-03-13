@@ -2,11 +2,11 @@ const Message=require('./model/message')
 const myEmitter=require('./emitter')
 const Player=require('./model/player')
 
-const perflop=require('./perflop')
+
 
 function socket(io,playerList,finalPlayers){
-    myEmitter.on('Perflop',(data)=>{
-        console.log('emit Perflop')
+    myEmitter.on('sendPersonnalPoker',(data)=>{
+        console.log('emit sendPersonnalPoker')
         // console.log(data)
         let personnalPoker=data.personnalPoker
         playerList.map((userinfo)=>{
@@ -17,7 +17,6 @@ function socket(io,playerList,finalPlayers){
             })[0].bottomPokers
             if(io.sockets.connected[socketId]){
                 io.sockets.connected[socketId].emit('bottomPokers',bottomPokers)
-                perflop(playerList,io,finalPlayers)
             }
         })
     })
@@ -34,27 +33,28 @@ function socket(io,playerList,finalPlayers){
                 console.log('playerInfo:'+playerInfo)
                 let socketId=''
                 playerList.forEach((elem)=>{
+                    console.log('elem:'+elem)
                     if(elem.seatNum===seatNum){
                         socketId=elem.socketId
                     }
                 })
-                if(io.sockets.connected[socketId]){
-                    console.log('io.sockets.connected[socketId]')
-                    if(playerInfo){
-                        io.sockets.connected[socketId].broadcast.emit('sendPlayerInfo',playerInfo)
-                    }else{
-                        io.sockets.connected[socketId].broadcast.emit('sendPlayerInfo',{seatNum:seatNum})
-                    }
-                    
+                if(playerInfo){
+                    console.log('如果该玩家还在')
+                    io.sockets.connected[socketId].broadcast.emit('sendPlayerInfo',playerInfo)
+                }else{
+                    console.log('如果该玩家不在')
+                    io.sockets.emit('sendPlayerInfo',{seatNum:seatNum})
                 }
             }
 
         })
     })
+
     io.on('connection',function(socketIo){
         console.log('connection')
         console.log(socketIo.id)
-        socketIo.on('sendSeatNum',(data)=>{
+
+        socketIo.on('addPlayer',(data)=>{
             let userinfo= {
                 socketId:socketIo.id,
                 seatNum:data.seatNum,
@@ -76,9 +76,11 @@ function socket(io,playerList,finalPlayers){
             }else{
                 playerList.push(userinfo)
             }
-                
-            
+            myEmitter.emit('sendMyInfo',data.seatNum)
+
         })
+
+
         socketIo.on('sendMessage',(clientMsg)=>{
             let username=clientMsg.username
             let msg=clientMsg.msg

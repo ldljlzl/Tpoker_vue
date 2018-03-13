@@ -1,6 +1,7 @@
 const BlindsPosition=require('./model/blindsPosition')
 const Player=require('./model/player')
-const Flop=require('./flop')
+const flop=require('./flop')
+
 let callFlag=false
 let checkNum=0
 
@@ -18,16 +19,17 @@ function action(playerList,arr,_index,lastBet,smallBlindPosition,foldFlag,finalP
     console.log('action')
     console.log('arr:'+arr)
     console.log('_index:'+_index)
+    console.log('smallBlindPosition:'+smallBlindPosition)
     if((arr[_index])||(arr[_index]===0)){
-    // if((arr[_index]>=0)&&(arr[_index]<=5)){    
-        let playerIndex,socketIo,betNum
+    // if((arr[_index]>=0)&&(arr[_index]<=5)){  
+        let playerIndex,socketIo,seatNum
         //找到当前说话的玩家信息
-        playerList.forEach(function(elem,index){
+        playerList.forEach(function(elem){
             if(elem.seatNum===arr[_index]){
                 let actionOverFlag=false
-                playerIndex=index
+                playerIndex=_index
                 socketIo=elem.socketIo
-                betNum=elem.betNum
+                seatNum=elem.seatNum
                 io.sockets.connected[elem.socketId].emit('action',{
                     smallBlindPosition:smallBlindPosition,
                     lastBet:lastBet,
@@ -42,42 +44,48 @@ function action(playerList,arr,_index,lastBet,smallBlindPosition,foldFlag,finalP
                 clearInterval(timer)
                 arr.splice(_index,1)
                 playerList.splice(playerIndex,1)
-                action(playerList,arr,_index,lastBet,smallBlindPosition,foldFlag,finalPlayers,io)
+                // action(playerList,arr,_index,lastBet,smallBlindPosition,foldFlag,finalPlayers,io)
             }else{
                 clearInterval(timer)
             }
         },12000)
+        
         socketIo.on('actionOver',(data)=>{
             //status=0为自动押注，status=1为跟注或加注，status=2为弃牌，status=3为让牌，status=4为AllIn
-            console.log('actionOver数据:'+data)
             clearInterval(timer)
+            socketIo.removeAllListeners('actionOver');
             console.log('data.status:'+data.status)
             actionOverFlag=true
             if(data.status===0){
-                console.log('自动押注')
+                console.log(seatNum+'号自动押注')
                 let tempIndex=_index+1
                 callFlag=true
-                betNum+=data.num
+                playerList[playerIndex].betNum+=data.num
                 action(playerList,arr,tempIndex,data.num,smallBlindPosition,foldFlag,finalPlayers,io)
             }else if(data.status===1){
+                console.log(seatNum+'号跟注或加注')
                 callFlag=true
-                betNum+=data.num
+                playerList[playerIndex].betNum+=data.num
                 let tempIndex=_index+1
                 action(playerList,arr,tempIndex,data.num,smallBlindPosition,true,finalPlayers,io)
             }else if(data.status===2){
+                console.log(seatNum+'号弃牌')
                 arr.splice(_index,1)
                 playerList.splice(playerIndex,1)
                 action(playerList,arr,_index,data.num,smallBlindPosition,foldFlag,finalPlayers,io)
             }else if(data.status===3){
+                console.log(seatNum+'号让牌')
                 checkNum+=1
                 let tempIndex=_index+1
                 action(playerList,arr,tempIndex,data.num,smallBlindPosition,foldFlag,finalPlayers,io)
             }else if(data.status===4){
+                console.log(seatNum+'号allIn')
                 arr.splice(_index,1)
                 let finalPlayer=playerList.splice(playerIndex,1)
                 finalPlayers.push(finalPlayer)
+                //allin待写
             }else{
-                console.log('actionOver返回data错误')
+                console.log(seatNum+'号actionOver返回data错误')
                 return
             }
         })
@@ -85,10 +93,12 @@ function action(playerList,arr,_index,lastBet,smallBlindPosition,foldFlag,finalP
         //如果arr遍历完，进行下一轮询问（不一定进入Flop）
         if(checkNum===playerList.length){
             //如果所有玩家都让牌
-            Flop()
+            flop()
         }else if(callFlag){
             //如果有人跟注或加注，进入下一轮
+            console.log('有人跟注或加注')
             action(playerList,arr,0,lastBet,6,true,finalPlayers,io)
+            
         }else{
             console.log('action出现了问题')
         }

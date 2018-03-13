@@ -27,10 +27,11 @@ function begin(){
                     bottomPokers:pokerArr.splice(0,2)
                 }
             }
-            console.log('Perflop')
-            myEmitter.emit('Perflop',{
+            console.log('sendPersonnalPoker')
+            myEmitter.emit('sendPersonnalPoker',{
                 personnalPoker:personnalPoker
             })
+            myEmitter.emit('perflop')
         }
     })
             
