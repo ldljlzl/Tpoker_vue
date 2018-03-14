@@ -5,14 +5,9 @@ const mongoose=require('mongoose')
 const bodyParser=require('body-parser')
 const cookieParser=require('cookie-parser')
 
+const gameServer=require('./gameServer')
 
 
-const socket=require('./socket')
-const myEmitter=require('./emitter')
-const perflop=require('./perflop')
-
-
-const BlindsPosition=require('./model/blindsPosition')
 
 let app=express()
 
@@ -61,60 +56,5 @@ console.log('success listen3000…………')
 
 
 
-
-let playerList=[]
-// let playerList=[
-//     {
-//         socketId:socketIo.id,
-//         seatNum:0,
-//         socketIo:socketIo,
-//         betNum:0,
-//         username:1
-//     },
-//     {
-//         socketId:socketIo.id,
-//         seatNum:0,
-//         socketIo:socketIo,
-//         betNum:0,
-//         username:1
-//     }
-// ]
-let finalPlayers=[]
-
-socket(io,playerList,finalPlayers)
-
-myEmitter.on("perflop",()=>{
-    perflop(playerList,io,finalPlayers)
-})
-
-myEmitter.on("deleteSocket",(seatNum)=>{
-    let _index
-    playerList.forEach((elem,index)=>{
-        if(elem.seatNum===seatNum){
-            _index=index
-        }
-    })
-    playerList.splice(_index,1)
-    
-})
-
-
-let blindsPosition=new BlindsPosition({
-    smallBlindPosition:0,
-    bigBlindPosition:1
-})
-
-BlindsPosition.findOne({},(err,res)=>{
-    if(!res){
-        blindsPosition.save(function(err,res){
-            if(err){
-                console.log('初始化开始位置失败')
-            }
-            else{
-                console.log('初始化开始位置成功')
-            }
-        })
-    }
-})
-
-        
+//游戏交互部分
+gameServer(io)

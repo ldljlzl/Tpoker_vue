@@ -1,6 +1,7 @@
 <template>
     <div class="main">
         <div class="playerPanel" v-if="flag">
+            
             <div class="topPanelPerson">
                 <img src="../assets/img/user.png" class="user" alt="user">
                 <span>{{this.username}}</span>
@@ -8,6 +9,9 @@
             <div class="middlePanelPerson" v-if="readyShowFlag">
                 <img :src="srcLeft" class="pokerLeft " >
                 <img :src="srcRight" class="pokerRight" >
+                <div class="actionFlag" v-show="actionFlag">
+                    <img src="../assets/img/hand.png" alt="hand">
+                </div>
             </div>
             <div class="middlePanelPerson" v-if="!readyShowFlag">
                 <div class="noReady" v-if="!ready">未准备</div>
@@ -40,7 +44,8 @@ export default {
               }
           }
       },
-      beginFlag:Boolean
+      beginFlag:Boolean,
+      actionFlag:Boolean
   },
   data:function(){
       return {
@@ -150,6 +155,14 @@ img.gold{
     display: flex;
     justify-content:center;
     align-items:center;
+}
+
+/*准备标志*/
+.actionFlag img{
+    width: 15%;
+    position: relative;
+    left:35%;
+    background-color: blue
 }
 
 

@@ -6,24 +6,32 @@
     </div>
     <div class="seats">
         <div class="seat one" >
-            <player :userinfo="player1" :begin-flag="flag.bottomPokersFlag">  </player>  
+            <player :userinfo="player1" :begin-flag="flag.bottomPokersFlag" :actionFlag="actionFlag[0]">  </player>  
         </div>
         <div class="seat two" >
-            <player :userinfo="player2" :begin-flag="flag.bottomPokersFlag">  </player> 
+            <player :userinfo="player2" :begin-flag="flag.bottomPokersFlag" :actionFlag="actionFlag[1]">  </player> 
         </div>
         <div class="seat three" >
-            <player :userinfo="player3" :begin-flag="flag.bottomPokersFlag">  </player> 
+            <player :userinfo="player3" :begin-flag="flag.bottomPokersFlag" :actionFlag="actionFlag[2]">  </player> 
         </div>
         <div class="seat four" >
-            <player :userinfo="player4" :begin-flag="flag.bottomPokersFlag">  </player> 
+            <player :userinfo="player4" :begin-flag="flag.bottomPokersFlag" :actionFlag="actionFlag[3]">  </player> 
         </div>
         <div class="seat five" >
-            <player :userinfo="player5" :begin-flag="flag.bottomPokersFlag">  </player> 
+            <player :userinfo="player5" :begin-flag="flag.bottomPokersFlag" :actionFlag="actionFlag[4]">  </player> 
         </div>
     </div>
 
     <div class="signout">
         <button @click="signout">退出房间</button>
+    </div>
+    
+    <div class="publicPokers">
+        <img :src="public1" alt="第一张公共牌" v-show="publicPokerFlag.flop">
+        <img :src="public2" alt="第二张公共牌" v-show="publicPokerFlag.flop">
+        <img :src="public3" alt="第三张公共牌" v-show="publicPokerFlag.flop">
+        <img :src="public4" alt="第四张公共牌" v-show="publicPokerFlag.turn">
+        <img :src="public5" alt="第五张公共牌" v-show="publicPokerFlag.river">
     </div>
     
     <div class="bottom" >
@@ -85,7 +93,7 @@ export default {
                 AllIn:false,
             },
             actionTime:{
-                time:10,
+                time:20,
                 show:false
             },
             bottomPoker0:'pokerBack',
@@ -99,8 +107,23 @@ export default {
             //上个玩家的押注
             lastBet:0,
             //定时器
-            timer:{}   
+            timer:{}, 
+            //正在行动标志
+            actionFlag:[false,false,false,false,false],
             
+            //公共牌组
+            pokerDefault:{
+                pokerDefault1:'pokerBack',
+                pokerDefault2:'pokerBack',
+                pokerDefault3:'pokerBack',
+                pokerDefault4:'pokerBack',
+                pokerDefault5:'pokerBack',
+            },
+            publicPokerFlag:{
+                flop:false,
+                turn:false,
+                river:false
+            }
         }
     },
     computed:{
@@ -109,7 +132,22 @@ export default {
         },
         srcBottomPoker1:function(){
             return require("../assets/img/"+this.bottomPoker1+".jpg")
-        }
+        },
+        public1:function(){
+            return require("../assets/img/"+this.pokerDefault.pokerDefault1+".jpg")
+        },
+        public2:function(){
+            return require("../assets/img/"+this.pokerDefault.pokerDefault2+".jpg")
+        },
+        public3:function(){
+            return require("../assets/img/"+this.pokerDefault.pokerDefault3+".jpg")
+        },
+        public4:function(){
+            return require("../assets/img/"+this.pokerDefault.pokerDefault4+".jpg")
+        },
+        public5:function(){
+            return require("../assets/img/"+this.pokerDefault.pokerDefault5+".jpg")
+        },
     },
     methods:{
         signout:function(){
@@ -177,13 +215,12 @@ export default {
         actionOver:function(){
             clearInterval(this.timer)
             this.timer={}
-            this.actionTime.time=10
+            this.actionTime.time=20
             this.actionTime.show=false
             this.flag.actionPanel=false
         },
         checkFunc:function(){
             this.actionOver()
-            //代写
             this.$socket.emit('actionOver', {status:3,num:this.lastBet});
         },
         callFunc:function(){
@@ -194,7 +231,6 @@ export default {
         },
         foldFunc:function(){
             this.actionOver()
-            //代写
             this.$socket.emit('actionOver', {status:2,num:this.lastBet});
         },
         raiseFunc:function(){
@@ -205,9 +241,13 @@ export default {
         },
         allInFunc:function(){
             this.actionOver()
-            this.$socket.emit('actionOver', {status:4,num:this.score});
             this.myBet+=this.score
             this.score=0
+
+            //传递给服务器的最大值
+            let sendBet=this.myBet>this.lastBet?this.myBet:this.lastBet 
+
+            this.$socket.emit('actionOver', {status:4,num:sendBet})
         },
         getPlayers:function(){
             let _this=this
@@ -271,10 +311,22 @@ export default {
         }
         this.getPlayers()
     },
+    beforeDestroy:function(){
+        //很多东西代写，如果刷新要保存哪些东西到localstorage；如果退出要怎样
+        localStorage.removeItem('bottomPoker0')
+        localStorage.removeItem('bottomPoker1')
+    },
     components:{
         player,chatroom
     },
     sockets:{
+        actionFlag:function(data){
+            let seatNum=data.seatNum
+            this.actionFlag=[false,false,false,false,false]
+            let arr=this.actionFlag
+            arr[seatNum]=true
+            this.actionFlag=arr
+        },
         getPlayers:function(){
             this.getPlayers()
         },
@@ -292,6 +344,9 @@ export default {
         },
         action:function(data){
             console.log(data)
+            this.$socket.emit('takingAction',{
+                seatNum:this.seatNum,
+            })
             this.lastBet=data.lastBet
             if(this.seatNum===data.smallBlindPosition){
                 console.log('小盲注')
@@ -317,15 +372,26 @@ export default {
                 },1000)
 
                 this.flag.actionPanel=true
+                this.disabled.Check=true
+                this.disabled.Call=false
+                this.disabled.Raise=false
                 //如果筹码不足，使部分按钮失效
-                if((this.score+this.myBet)<data.lastBet){
+                console.log('data.lastBet:'+data.lastBet)
+                console.log('this.myBet:'+this.myBet)
+                console.log(typeof data.lastBet)
+                console.log(typeof this.myBet)
+                if((this.score+this.myBet)<=data.lastBet){
+                    console.log('1')
                     this.disabled.Call=true
-                }else if(this.score<(data.lastBet+20)){
+                }else if(this.score<=(data.lastBet+20)){
+                    console.log('2')
                     this.disabled.Raise=true
                 }else if(this.myBet===data.lastBet){
+                    console.log('3')
                     this.disabled.Check=false
-                }
-                else{
+                    this.disabled.Call=true
+                }else{
+                    console.log('4')
                     //没想好
                 }
 
@@ -351,6 +417,23 @@ export default {
                 alert(this.seatNum)
                 alert('排序出错')
             }
+        },
+        flop:function(data){
+            let arrPoker=data.arrPoker
+            this.publicPokerFlag.flop=true
+            this.pokerDefault.pokerDefault1=arrPoker[0]
+            this.pokerDefault.pokerDefault2=arrPoker[1]
+            this.pokerDefault.pokerDefault3=arrPoker[2]
+        },
+        turn:function(data){
+            let arrPoker=data.arrPoker
+            this.publicPokerFlag.turn=true
+            this.pokerDefault.pokerDefault4=arrPoker[0]
+        },
+        river:function(data){
+            let arrPoker=data.arrPoker
+            this.publicPokerFlag.river=true
+            this.pokerDefault.pokerDefault5=arrPoker[0]
         }
     },
 }
@@ -377,6 +460,19 @@ div.seat img.gold{
     height: 10%;
     width: 10%;
 }
+
+/*公共牌区域*/
+div.publicPokers{
+    height: 30%;
+    width: 40%;
+    position: absolute;
+    left: 31%;
+    top: 37%; 
+}
+div.publicPokers img{
+    height: 70%;
+}
+
 
 /*bottom层调整*/
 div.bottom{

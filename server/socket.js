@@ -7,12 +7,12 @@ const Player=require('./model/player')
 function socket(io,playerList,finalPlayers){
     myEmitter.on('sendPersonnalPoker',(data)=>{
         console.log('emit sendPersonnalPoker')
-        // console.log(data)
-        let personnalPoker=data.personnalPoker
+        let personnalPokerTemp=data.personnalPoker
+        myEmitter.emit('sendPP',{personnalPoker:personnalPokerTemp})
         playerList.map((userinfo)=>{
             let seatNum=userinfo.seatNum
             let socketId=userinfo.socketId
-            let bottomPokers=personnalPoker.filter((elem)=>{
+            let bottomPokers=personnalPokerTemp.filter((elem)=>{
                 return elem.seatNum===seatNum
             })[0].bottomPokers
             if(io.sockets.connected[socketId]){
@@ -30,10 +30,8 @@ function socket(io,playerList,finalPlayers){
                 console.log(err)
             }else{
                 let playerInfo=res
-                console.log('playerInfo:'+playerInfo)
                 let socketId=''
                 playerList.forEach((elem)=>{
-                    console.log('elem:'+elem)
                     if(elem.seatNum===seatNum){
                         socketId=elem.socketId
                     }
@@ -52,8 +50,6 @@ function socket(io,playerList,finalPlayers){
 
     io.on('connection',function(socketIo){
         console.log('connection')
-        console.log(socketIo.id)
-
         socketIo.on('addPlayer',(data)=>{
             let userinfo= {
                 socketId:socketIo.id,
@@ -80,7 +76,13 @@ function socket(io,playerList,finalPlayers){
 
         })
 
-
+        
+        socketIo.on('takingAction',(data)=>{
+            let seatNum=data.seatNum
+            socketIo.broadcast.emit('actionFlag',{
+                seatNum:seatNum,
+            })
+        })
         socketIo.on('sendMessage',(clientMsg)=>{
             let username=clientMsg.username
             let msg=clientMsg.msg

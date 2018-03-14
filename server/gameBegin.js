@@ -28,10 +28,11 @@ function begin(){
                 }
             }
             console.log('sendPersonnalPoker')
+            console.log('personnalPoker:'+personnalPoker)
             myEmitter.emit('sendPersonnalPoker',{
                 personnalPoker:personnalPoker
             })
-            myEmitter.emit('perflop')
+            myEmitter.emit('perflop',{pokerArr:pokerArr})
         }
     })
             

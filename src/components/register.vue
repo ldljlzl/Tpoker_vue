@@ -18,7 +18,7 @@
           </el-form-item>
         </el-form>
         <div class="toLogin">
-          <router-link to='/login'>已有账号，前去登录</router-link>
+          <router-link to='/signin'>已有账号，前去登录</router-link>
         </div>
       </div>
     </div>
