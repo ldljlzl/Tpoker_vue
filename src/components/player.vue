@@ -12,6 +12,9 @@
                 <div class="actionFlag" v-show="actionFlag">
                     <img src="../assets/img/hand.png" alt="hand">
                 </div>
+                <div class="actionText">{{this.actionText}}</div>
+                <div class="betNum">押注：{{this.betNum}}</div>
+
             </div>
             <div class="middlePanelPerson" v-if="!readyShowFlag">
                 <div class="noReady" v-if="!ready">未准备</div>
@@ -45,7 +48,9 @@ export default {
           }
       },
       beginFlag:Boolean,
-      actionFlag:Boolean
+      actionFlag:Boolean,
+      actionText:String,
+      betNum:Number
   },
   data:function(){
       return {
@@ -163,6 +168,24 @@ img.gold{
     position: relative;
     left:35%;
     background-color: blue
+}
+
+/*action提示*/
+.actionText{
+    color: #f45b9c;
+    font-size: 30px;
+    position: relative;
+    bottom: 160%;
+    left: 40%;
+}
+
+/*押注*/
+.betNum{
+    color: #cdc8a0;
+    font-size: 20px;
+    position: relative;
+    bottom: 130%;
+    left: 45%;
 }
 
 

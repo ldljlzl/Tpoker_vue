@@ -7,9 +7,10 @@ const action=require('./action')
 
 
 //Perflop押注环节
-function perflop(playerList,io,finalPlayers){
+function perflop(playerList,io,finalPlayers,foldPlayers){
     console.log('perflop押注');
-    console.log(playerList[0]);
+
+    
     (function(io){
         let p=new Promise((resolve)=>{
             //找到这局的大小盲位
@@ -60,7 +61,7 @@ function perflop(playerList,io,finalPlayers){
                                 //玩家座位号顺序
                                 arr:arr,
                             })
-                            action(playerList,arr,0,10,smallBlindPosition,finalPlayers,data.io)
+                            action(playerList,arr,0,10,smallBlindPosition,finalPlayers,foldPlayers,data.io)
                         }else{
                             console.log('perflop押注错误')
                         } 

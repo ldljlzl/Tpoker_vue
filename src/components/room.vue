@@ -1,24 +1,30 @@
 <template>
 
   <div class="room">
+    <audio  class="backgroundAudio1" src="/static/audio/开始前背景音乐.mp3" autoplay="autoplay"></audio>
+    <audio  class="backgroundAudio2" src="/static/audio/发牌.mp3" ></audio>
+    <audio  class="backgroundAudio2" src="/static/audio/开始后背景音乐.mp3" loop="loop"></audio>
+    <audio  class="winAudio" src="/static/audio/胜利.mp3" ></audio>
+    <audio  class="loseAudio" src="/static/audio/失败.mp3" ></audio>
+    <audio  class="sendPokerAudio" src="/static/audio/发牌.mp3" ></audio>
     <div class="readyDiv">
         <el-button type="primary" round @click="readyFunc" v-show="flag.readyShow">准备</el-button>
     </div>
     <div class="seats">
         <div class="seat one" >
-            <player :userinfo="player1" :begin-flag="flag.bottomPokersFlag" :actionFlag="actionFlag[0]">  </player>  
+            <player :userinfo="player1" :begin-flag="flag.bottomPokersFlag" :actionFlag="actionFlag[0]" :actionText="arrActionText[0]" :betNum="arrBet[0]">  </player>  
         </div>
         <div class="seat two" >
-            <player :userinfo="player2" :begin-flag="flag.bottomPokersFlag" :actionFlag="actionFlag[1]">  </player> 
+            <player :userinfo="player2" :begin-flag="flag.bottomPokersFlag" :actionFlag="actionFlag[1]" :actionText="arrActionText[1]" :betNum="arrBet[1]">  </player> 
         </div>
         <div class="seat three" >
-            <player :userinfo="player3" :begin-flag="flag.bottomPokersFlag" :actionFlag="actionFlag[2]">  </player> 
+            <player :userinfo="player3" :begin-flag="flag.bottomPokersFlag" :actionFlag="actionFlag[2]" :actionText="arrActionText[2]" :betNum="arrBet[2]">  </player> 
         </div>
         <div class="seat four" >
-            <player :userinfo="player4" :begin-flag="flag.bottomPokersFlag" :actionFlag="actionFlag[3]">  </player> 
+            <player :userinfo="player4" :begin-flag="flag.bottomPokersFlag" :actionFlag="actionFlag[3]" :actionText="arrActionText[3]" :betNum="arrBet[3]">  </player> 
         </div>
         <div class="seat five" >
-            <player :userinfo="player5" :begin-flag="flag.bottomPokersFlag" :actionFlag="actionFlag[4]">  </player> 
+            <player :userinfo="player5" :begin-flag="flag.bottomPokersFlag" :actionFlag="actionFlag[4]" :actionText="arrActionText[4]" :betNum="arrBet[4]">  </player> 
         </div>
     </div>
 
@@ -43,6 +49,8 @@
             <el-button type="primary" :disabled="disabled.AllIn" round @click="allInFunc" >all in</el-button>       
         </div>
         <div class="actionTime" v-show="actionTime.show">{{this.actionTime.time}}</div>
+        <div class="winText result" v-show="winFlag">胜利</div>
+        <div class="loseText result" v-show="loseFlag">失败</div>
         <div class="myseat" >
             <div class="left">
                 <span>{{this.username}}</span>
@@ -109,7 +117,7 @@ export default {
             //定时器
             timer:{}, 
             //正在行动标志
-            actionFlag:[false,false,false,false,false],
+            actionFlag:[true,false,false,false,false],
             
             //公共牌组
             pokerDefault:{
@@ -123,30 +131,40 @@ export default {
                 flop:false,
                 turn:false,
                 river:false
-            }
+            },
+
+            //胜利或失败提示
+            winFlag:false,
+            loseFlag:false  ,
+
+            //各个玩家下注情况
+            arrBet:[0,0,0,0,0],
+            arrActionText:['让牌','让牌','让牌','让牌','让牌']
+
+
         }
     },
     computed:{
         srcBottomPoker0:function(){
-            return require("../assets/img/"+this.bottomPoker0+".jpg")
+            return "/static/img/"+this.bottomPoker0+".jpg"
         },
         srcBottomPoker1:function(){
-            return require("../assets/img/"+this.bottomPoker1+".jpg")
+            return "/static/img/"+this.bottomPoker1+".jpg"
         },
         public1:function(){
-            return require("../assets/img/"+this.pokerDefault.pokerDefault1+".jpg")
+            return "/static/img/"+this.pokerDefault.pokerDefault1+".jpg"
         },
         public2:function(){
-            return require("../assets/img/"+this.pokerDefault.pokerDefault2+".jpg")
+            return "/static/img/"+this.pokerDefault.pokerDefault2+".jpg"
         },
         public3:function(){
-            return require("../assets/img/"+this.pokerDefault.pokerDefault3+".jpg")
+            return "/static/img/"+this.pokerDefault.pokerDefault3+".jpg"
         },
         public4:function(){
-            return require("../assets/img/"+this.pokerDefault.pokerDefault4+".jpg")
+            return "/static/img/"+this.pokerDefault.pokerDefault4+".jpg"
         },
         public5:function(){
-            return require("../assets/img/"+this.pokerDefault.pokerDefault5+".jpg")
+            return "/static/img/"+this.pokerDefault.pokerDefault5+".jpg"
         },
     },
     methods:{
@@ -170,6 +188,9 @@ export default {
             }  
         },  
         readyFunc:function(elem){
+            let _elem=elem
+            this.winFlag=false
+            this.loseFlag=false  
             let flag=JSON.parse(localStorage.flag)
             if(this.flag.ready){
                 console.log('取消准备')
@@ -193,6 +214,7 @@ export default {
                     seatNum:this.seatNum
                 }).then((response)=>{
                     if(response.body.status===2){
+                        _elem.target.innerText='准备'
                         flag.ready=true
                         _this.flag.ready=true
                         localStorage.setItem('flag',JSON.stringify(flag))
@@ -205,6 +227,12 @@ export default {
             }
         },
         sendBottomPokers:function(){
+            let audio1=document.getElementsByClassName('backgroundAudio1')[0]
+            let audio2=document.getElementsByClassName('backgroundAudio2')[0]
+            let audio3=document.getElementsByClassName('backgroundAudio2')[1]
+            audio1.pause()
+            audio2.play()
+            audio3.play()
             let bottomPoker0=document.getElementById('poker0')
             let bottomPoker1=document.getElementById('poker1')
             let src0='../static/img/'+localStorage.bottomPoker0+'.jpg'
@@ -291,6 +319,52 @@ export default {
                 // 响应错误回调
                 alert('请求房间用户列表失败')
             })
+        },
+        initialize:function(){
+            //初始化变量
+            this.flag={
+                ready:false,
+                readyShow:true,
+                bottomPokersFlag:false,
+                actionPanel:false
+            }
+            this.disabled={
+                Check:true,
+                Fold:false,
+                Call:false,
+                Raise:false,
+                AllIn:false,
+            }
+            this.actionTime={
+                time:20,
+                show:false
+            }
+            this.bottomPoker0='pokerBack'
+            this.bottomPoker1='pokerBack'
+            //我的押注
+            this.myBet=0
+            //盲注
+            this.blind=10
+            //上个玩家的押注
+            this.lastBet=0
+            //定时器
+            this.timer={},
+            //正在行动标志
+            this.actionFlag=[false,false,false,false,false],
+            
+            //公共牌组
+            this.pokerDefault={
+                pokerDefault1:'pokerBack',
+                pokerDefault2:'pokerBack',
+                pokerDefault3:'pokerBack',
+                pokerDefault4:'pokerBack',
+                pokerDefault5:'pokerBack',
+            }
+            this.publicPokerFlag={
+                flop:false,
+                turn:false,
+                river:false
+            }
         }
         
     },
@@ -320,11 +394,29 @@ export default {
         player,chatroom
     },
     sockets:{
+        sendPlayerActionInfo:function(data){
+            if(data.seatNum!==this.seatNum){
+                this.arrBet[(data.seatNum-this.seatNum+5)%6]=data.num
+                let actionText=''
+                if(data.status===0){
+                    actionText='押注'
+                }else if(data.status===1){
+                    actionText='跟注'
+                }else if(data.status===2){
+                    actionText='弃牌'
+                }else if(data.status===3){
+                    actionText='让牌'
+                }else if(data.status===4){
+                    actionText='AllIn'
+                }
+                this.arrActionText[(data.seatNum-this.seatNum+5)%6]=actionText
+            }
+        },
         actionFlag:function(data){
             let seatNum=data.seatNum
             this.actionFlag=[false,false,false,false,false]
             let arr=this.actionFlag
-            arr[seatNum]=true
+            arr[(seatNum-this.seatNum+5)%6]=true
             this.actionFlag=arr
         },
         getPlayers:function(){
@@ -343,6 +435,7 @@ export default {
             this.sendBottomPokers() 
         },
         action:function(data){
+            console.log('action')
             console.log(data)
             this.$socket.emit('takingAction',{
                 seatNum:this.seatNum,
@@ -376,23 +469,16 @@ export default {
                 this.disabled.Call=false
                 this.disabled.Raise=false
                 //如果筹码不足，使部分按钮失效
-                console.log('data.lastBet:'+data.lastBet)
-                console.log('this.myBet:'+this.myBet)
-                console.log(typeof data.lastBet)
-                console.log(typeof this.myBet)
+
                 if((this.score+this.myBet)<=data.lastBet){
-                    console.log('1')
                     this.disabled.Call=true
-                }else if(this.score<=(data.lastBet+20)){
-                    console.log('2')
+                }
+                if(this.score<=(data.lastBet+20)){
                     this.disabled.Raise=true
-                }else if(this.myBet===data.lastBet){
-                    console.log('3')
+                }
+                if(this.myBet===data.lastBet){
                     this.disabled.Check=false
                     this.disabled.Call=true
-                }else{
-                    console.log('4')
-                    //没想好
                 }
 
             }
@@ -434,6 +520,42 @@ export default {
             let arrPoker=data.arrPoker
             this.publicPokerFlag.river=true
             this.pokerDefault.pokerDefault5=arrPoker[0]
+        },
+        win:function(){
+            console.log('win')
+            let audio=document.getElementsByClassName('winAudio')[0]
+            document.getElementsByClassName('backgroundAudio2')[1].pause()
+            audio.play()
+            this.winFlag=true
+            this.initialize()
+        },
+        lose:function(){
+            console.log('lose')
+            let audio=document.getElementsByClassName('loseAudio')[0]
+            document.getElementsByClassName('backgroundAudio2')[1].pause()
+            audio.play()
+            this.loseFlag=true
+            this.initialize()
+        },
+        renewScore:function(data){
+            data.forEach((elem)=>{
+                if(elem.seatNum===(this.seatNum+1)%6){
+                    this.player1.score+=elem.score
+                }else if(elem.seatNum===(this.seatNum+2)%6){
+                    this.player2.score+=elem.score
+                }else if(elem.seatNum===(this.seatNum+3)%6){
+                    this.player3.score+=elem.score
+                }else if(elem.seatNum===(this.seatNum+4)%6){
+                    this.player4.score+=elem.score
+                }else if(elem.seatNum===(this.seatNum+5)%6){
+                    this.player5.score+=elem.score
+                }else if(elem.seatNum===this.seatNum){
+                    this.score+=elem.score
+                }
+                else{
+                    alert('排序出错')
+                }
+            })
         }
     },
 }
@@ -554,13 +676,10 @@ div.four{
     top:2%;
 }
 div.five{
-    right:2%;
+    right:5%;
     top:30%;
 }
-div.six{
-    right:5%;
-    top:70%;
-}
+
 
 
 /*退出键*/
@@ -603,4 +722,20 @@ div.actionTime{
     font-size: 35px;
     color:red;
 }
+
+/*胜利或失败提示*/
+.result{
+    position: absolute;
+    left:60%;
+    top:65%;
+    font-size: 60px;
+}
+.winText{
+    color: red;
+    border: 2px solid red;
+}
+.loseText{
+    border: 2px solid black
+}
+
 </style>

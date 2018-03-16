@@ -10,6 +10,7 @@ const judge=require('./step/judge')
 const BlindsPosition=require('./model/blindsPosition')
 
 function gameServer(io){
+    let foldPlayers=[]  //弃牌玩家
     let playerList=[] //玩家列表
     let finalPlayers=[]     //进入最后比牌的玩家
     // 两者数据结构为
@@ -69,29 +70,29 @@ function gameServer(io){
 
 
     myEmitter.on("perflop",(data)=>{
-        perflop(playerList,io,finalPlayers)
+        perflop(playerList,io,finalPlayers,foldPlayers)
         pokerArr=data.pokerArr
     })
     myEmitter.on("flop",(lastBet)=>{
         let arrPoker=pokerArr.splice(0,3)
         publicPoker=arrPoker
-        flop(arrPoker,io,playersPosition,playerList,finalPlayers,lastBet)
+        flop(arrPoker,io,playersPosition,playerList,finalPlayers,foldPlayers,lastBet)
     })
     myEmitter.on("turn",(lastBet)=>{
         let arrPoker=pokerArr.splice(0,1)
         publicPoker.push(arrPoker[0])
-        turn(arrPoker,io,playersPosition,playerList,finalPlayers,lastBet)
+        turn(arrPoker,io,playersPosition,playerList,finalPlayers,foldPlayers,lastBet)
     })
     myEmitter.on("river",(lastBet)=>{
         let arrPoker=pokerArr.splice(0,1)
         publicPoker.push(arrPoker[0])
-        river(arrPoker,io,playersPosition,playerList,finalPlayers,lastBet)
+        river(arrPoker,io,playersPosition,playerList,finalPlayers,foldPlayers,lastBet)
     })
     myEmitter.on("judge",()=>{
         let playersInfo=finalPlayers.concat(playerList)
         console.log('lllllllllllllllllllllll')
         console.log(personnalPoker)
-        judge(io,playersInfo,personnalPoker,publicPoker)
+        judge(io,foldPlayers,playersInfo,personnalPoker,publicPoker)
     })
 
 

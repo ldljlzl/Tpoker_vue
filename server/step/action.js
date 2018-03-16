@@ -4,7 +4,7 @@ const myEmitter=require('../emitter')
 let callFlag=false
 let checkNum=0
 
-function action(playerList,arr,_index,lastBet,smallBlindPosition,finalPlayers,io){
+function action(playerList,arr,_index,lastBet,smallBlindPosition,finalPlayers,foldPlayers,io){
     //playerList：玩家列表，包含socketId、seatNum、socketIo、betNum
     //arr：发牌的座位号次序
     //_index：行动玩家编号
@@ -22,13 +22,20 @@ function action(playerList,arr,_index,lastBet,smallBlindPosition,finalPlayers,io
         myEmitter.emit('next',{lastBet:lastBet})
         return
     }
+    if(playerList.length===1){
+        myEmitter.emit('next',{lastBet:lastBet})
+        return
+    }
 
     if((arr[_index])||(arr[_index]===0)){
     // if((arr[_index]>=0)&&(arr[_index]<=5)){  
-        let playerIndex,socketIo,seatNum
+        let playerIndex,socketIo,seatNum,bet_temp
         //找到当前说话的玩家信息
+        console.log('arr[_index]:'+arr[_index])
         playerList.forEach(function(elem){
+            console.log(elem.socketId)
             if(elem.seatNum===arr[_index]){
+                console.log('emit action')
                 let actionOverFlag=false
                 playerIndex=_index
                 socketIo=elem.socketIo
@@ -37,6 +44,7 @@ function action(playerList,arr,_index,lastBet,smallBlindPosition,finalPlayers,io
                     smallBlindPosition:smallBlindPosition,
                     lastBet:lastBet
                 })
+                io.sockets.emit('actionFlag',{seatNum:seatNum})
             }
         })
                 //超过12s直接进入下一名玩家行动
@@ -44,60 +52,69 @@ function action(playerList,arr,_index,lastBet,smallBlindPosition,finalPlayers,io
             if(!actionOverFlag){
                 console.log('超过时间限制，踢出游戏')
                 clearInterval(timer)
+                console.log(seatNum+'号弃牌')
                 arr.splice(playerIndex,1)
                 playerList.splice(playerIndex,1)
-                // action(playerList,arr,_index,lastBet,smallBlindPosition,foldFlag,finalPlayers,io)
+                io.sockets.emit('sendPlayerActionInfo',{seatNum:seatNum,num:bet_temp,status:2})
+                action(playerList,arr,playerIndex,data.num,smallBlindPosition,finalPlayers,foldPlayers,io)
             }else{
                 clearInterval(timer)
             }
-        },12000)
+        },23000)
         
         socketIo.on('actionOver',(data)=>{
             //status=0为自动押注，status=1为跟注或加注，status=2为弃牌，status=3为让牌，status=4为AllIn
+            io.sockets.emit('sendPlayerActionInfo',{seatNum:seatNum,num:data.num,status:data.status})
             clearInterval(timer)
             socketIo.removeAllListeners('actionOver');
             console.log('data.status:'+data.status)
             actionOverFlag=true
             if(data.status===0){
                 console.log(seatNum+'号自动押注')
+                bet_temp=data.num
                 let tempIndex=playerIndex+1
                 callFlag=true
                 playerList[playerIndex].betNum=data.num
-                action(playerList,arr,tempIndex,data.num,smallBlindPosition,finalPlayers,io)
+                action(playerList,arr,tempIndex,data.num,smallBlindPosition,finalPlayers,foldPlayers,io)
             }else if(data.status===1){
                 console.log(seatNum+'号跟注或加注')
+                bet_temp=data.num
                 if(playerList.length===1){
                     playerList[playerIndex].betNum=data.num
                     arr.splice(playerIndex,1)
                     let finalPlayer=playerList.splice(playerIndex,1)
                     finalPlayers.push(finalPlayer)
-                    action(playerList,arr,playerIndex,data.num,smallBlindPosition,finalPlayers,io)
+                    action(playerList,arr,playerIndex,data.num,smallBlindPosition,finalPlayers,foldPlayers,io)
                 }else{
                     callFlag=true
                     playerList[playerIndex].betNum=data.num
                     let tempIndex=playerIndex+1
-                    action(playerList,arr,tempIndex,data.num,smallBlindPosition,finalPlayers,io)
+                    action(playerList,arr,tempIndex,data.num,smallBlindPosition,finalPlayers,foldPlayers,io)
                 }
                     
             }else if(data.status===2){
                 console.log(seatNum+'号弃牌')
+                bet_temp=data.num
                 arr.splice(playerIndex,1)
                 playerList.splice(playerIndex,1)
-                personnalPoker.splice(playerIndex,1)
-                action(playerList,arr,playerIndex,data.num,smallBlindPosition,finalPlayers,io)
+                let foldPlayer=playerList.splice(playerIndex,1)
+                foldPlayers.push(foldPlayer)
+                action(playerList,arr,playerIndex,data.num,smallBlindPosition,finalPlayers,foldPlayers,io)
             }else if(data.status===3){
                 console.log(seatNum+'号让牌')
+                bet_temp=data.num
                 checkNum+=1
                 let tempIndex=playerIndex+1
-                action(playerList,arr,tempIndex,data.num,smallBlindPosition,finalPlayers,io)
+                action(playerList,arr,tempIndex,data.num,smallBlindPosition,finalPlayers,foldPlayers,io)
             }else if(data.status===4){
                 console.log(seatNum+'号allIn')
+                bet_temp=data.num
                 callFlag=true
                 playerList[playerIndex].betNum=data.num
                 arr.splice(playerIndex,1)
                 let finalPlayer=playerList.splice(playerIndex,1)
                 finalPlayers.push(finalPlayer)
-                action(playerList,arr,playerIndex,data.num,smallBlindPosition,finalPlayers,io)
+                action(playerList,arr,playerIndex,data.num,smallBlindPosition,finalPlayers,foldPlayers,io)
             }else{
                 console.log(seatNum+'号actionOver返回data错误')
                 return
@@ -116,7 +133,7 @@ function action(playerList,arr,_index,lastBet,smallBlindPosition,finalPlayers,io
             console.log('有人跟注或加注或AllIn')
             callFlag=false
             checkNum=0
-            action(playerList,arr,0,lastBet,6,finalPlayers,io) 
+            action(playerList,arr,0,lastBet,6,finalPlayers,foldPlayers,io) 
         }else{
             console.log('action出现了问题')
         }
