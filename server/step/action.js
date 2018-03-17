@@ -16,24 +16,18 @@ function action(playerList,arr,_index,lastBet,smallBlindPosition,finalPlayers,fo
 
     //如果arr[_index]未定义，说明一轮结束
     console.log('action')
-    console.log('lastBet:'+lastBet)
 
     if(playerList.length===0){
-        myEmitter.emit('next',{lastBet:lastBet})
-        return
-    }
-    if(playerList.length===1){
+        console.log(playerList)
         myEmitter.emit('next',{lastBet:lastBet})
         return
     }
 
     if((arr[_index])||(arr[_index]===0)){
     // if((arr[_index]>=0)&&(arr[_index]<=5)){  
-        let playerIndex,socketIo,seatNum,bet_temp
+        let playerIndex,socketIo,seatNum
         //找到当前说话的玩家信息
-        console.log('arr[_index]:'+arr[_index])
         playerList.forEach(function(elem){
-            console.log(elem.socketId)
             if(elem.seatNum===arr[_index]){
                 console.log('emit action')
                 let actionOverFlag=false
@@ -54,8 +48,9 @@ function action(playerList,arr,_index,lastBet,smallBlindPosition,finalPlayers,fo
                 clearInterval(timer)
                 console.log(seatNum+'号弃牌')
                 arr.splice(playerIndex,1)
-                playerList.splice(playerIndex,1)
-                io.sockets.emit('sendPlayerActionInfo',{seatNum:seatNum,num:bet_temp,status:2})
+                let foldPlayer=playerList.splice(playerIndex,1)[0]
+                foldPlayers.push(foldPlayer)
+                io.sockets.emit('sendPlayerActionInfo',{seatNum:seatNum,num:data.num,status:2})
                 action(playerList,arr,playerIndex,data.num,smallBlindPosition,finalPlayers,foldPlayers,io)
             }else{
                 clearInterval(timer)
@@ -67,22 +62,21 @@ function action(playerList,arr,_index,lastBet,smallBlindPosition,finalPlayers,fo
             io.sockets.emit('sendPlayerActionInfo',{seatNum:seatNum,num:data.num,status:data.status})
             clearInterval(timer)
             socketIo.removeAllListeners('actionOver');
-            console.log('data.status:'+data.status)
             actionOverFlag=true
             if(data.status===0){
                 console.log(seatNum+'号自动押注')
-                bet_temp=data.num
+                console.log(seatNum+'号下注额为'+data.num)
                 let tempIndex=playerIndex+1
                 callFlag=true
                 playerList[playerIndex].betNum=data.num
                 action(playerList,arr,tempIndex,data.num,smallBlindPosition,finalPlayers,foldPlayers,io)
             }else if(data.status===1){
                 console.log(seatNum+'号跟注或加注')
-                bet_temp=data.num
+                console.log(seatNum+'号下注额为'+data.num)
                 if(playerList.length===1){
                     playerList[playerIndex].betNum=data.num
                     arr.splice(playerIndex,1)
-                    let finalPlayer=playerList.splice(playerIndex,1)
+                    let finalPlayer=playerList.splice(playerIndex,1)[0]
                     finalPlayers.push(finalPlayer)
                     action(playerList,arr,playerIndex,data.num,smallBlindPosition,finalPlayers,foldPlayers,io)
                 }else{
@@ -94,25 +88,24 @@ function action(playerList,arr,_index,lastBet,smallBlindPosition,finalPlayers,fo
                     
             }else if(data.status===2){
                 console.log(seatNum+'号弃牌')
-                bet_temp=data.num
+                console.log(seatNum+'号下注额为'+playerList[playerIndex].betNum)
                 arr.splice(playerIndex,1)
-                playerList.splice(playerIndex,1)
-                let foldPlayer=playerList.splice(playerIndex,1)
+                let foldPlayer=playerList.splice(playerIndex,1)[0]
                 foldPlayers.push(foldPlayer)
                 action(playerList,arr,playerIndex,data.num,smallBlindPosition,finalPlayers,foldPlayers,io)
             }else if(data.status===3){
                 console.log(seatNum+'号让牌')
-                bet_temp=data.num
+                console.log(seatNum+'号下注额为'+data.num)
                 checkNum+=1
                 let tempIndex=playerIndex+1
                 action(playerList,arr,tempIndex,data.num,smallBlindPosition,finalPlayers,foldPlayers,io)
             }else if(data.status===4){
                 console.log(seatNum+'号allIn')
-                bet_temp=data.num
+                console.log(seatNum+'号下注额为'+data.bet)
                 callFlag=true
-                playerList[playerIndex].betNum=data.num
+                playerList[playerIndex].betNum=data.bet
                 arr.splice(playerIndex,1)
-                let finalPlayer=playerList.splice(playerIndex,1)
+                let finalPlayer=playerList.splice(playerIndex,1)[0]
                 finalPlayers.push(finalPlayer)
                 action(playerList,arr,playerIndex,data.num,smallBlindPosition,finalPlayers,foldPlayers,io)
             }else{

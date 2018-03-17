@@ -22,7 +22,7 @@
             </div>
             <div class="bottomPanelPerson">
                 <img class="gold" src="../assets/img/gold.png" alt="gold">
-                <span>{{this.score}}</span>
+                <span>{{this.score-this.betNum}}</span>
             </div>    
         </div>
         <div class="noPlayer" v-if="!flag">

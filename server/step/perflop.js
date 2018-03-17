@@ -61,6 +61,7 @@ function perflop(playerList,io,finalPlayers,foldPlayers){
                                 //玩家座位号顺序
                                 arr:arr,
                             })
+                            console.log(playerList.length)
                             action(playerList,arr,0,10,smallBlindPosition,finalPlayers,foldPlayers,data.io)
                         }else{
                             console.log('perflop押注错误')

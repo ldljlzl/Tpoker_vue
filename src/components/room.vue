@@ -8,7 +8,7 @@
     <audio  class="loseAudio" src="/static/audio/失败.mp3" ></audio>
     <audio  class="sendPokerAudio" src="/static/audio/发牌.mp3" ></audio>
     <div class="readyDiv">
-        <el-button type="primary" round @click="readyFunc" v-show="flag.readyShow">准备</el-button>
+        <el-button type="primary" round @click="readyFunc" v-show="flag.readyShow">{{readyText}}</el-button>
     </div>
     <div class="seats">
         <div class="seat one" >
@@ -87,12 +87,14 @@ export default {
             seatNum:100,
             score:10000,
             username:'lzl',
+            readyText:'准备',
             flag:{
                 ready:false,
                 readyShow:true,
                 bottomPokersFlag:false,
                 actionPanel:false
             },
+            
             disabled:{
                 Check:true,
                 Fold:false,
@@ -197,7 +199,7 @@ export default {
                 flag.ready=false
                 this.flag.ready=false
                 localStorage.setItem('flag',JSON.stringify(flag))
-                elem.target.innerText='准备'
+                this.readyText='准备'
                 this.$http.post('/api/cancelReady',{
                     username:this.username
                 }).then((response)=>{
@@ -214,11 +216,11 @@ export default {
                     seatNum:this.seatNum
                 }).then((response)=>{
                     if(response.body.status===2){
-                        _elem.target.innerText='准备'
                         flag.ready=true
                         _this.flag.ready=true
                         localStorage.setItem('flag',JSON.stringify(flag))
-                        elem.target.innerText='取消准备'
+                        this.readyText='取消准备'
+                        this.flag.bottomPokersFlag=false
                         console.log('准备成功')
                     }else{
                         alert(response.body.msg)
@@ -275,7 +277,7 @@ export default {
             //传递给服务器的最大值
             let sendBet=this.myBet>this.lastBet?this.myBet:this.lastBet 
 
-            this.$socket.emit('actionOver', {status:4,num:sendBet})
+            this.$socket.emit('actionOver', {status:4,num:sendBet,bet:this.myBet})
         },
         getPlayers:function(){
             let _this=this
@@ -322,10 +324,11 @@ export default {
         },
         initialize:function(){
             //初始化变量
+            this.readyText='准备'
             this.flag={
                 ready:false,
                 readyShow:true,
-                bottomPokersFlag:false,
+                bottomPokersFlag:true,
                 actionPanel:false
             }
             this.disabled={
@@ -339,8 +342,6 @@ export default {
                 time:20,
                 show:false
             }
-            this.bottomPoker0='pokerBack'
-            this.bottomPoker1='pokerBack'
             //我的押注
             this.myBet=0
             //盲注
@@ -350,21 +351,7 @@ export default {
             //定时器
             this.timer={},
             //正在行动标志
-            this.actionFlag=[false,false,false,false,false],
-            
-            //公共牌组
-            this.pokerDefault={
-                pokerDefault1:'pokerBack',
-                pokerDefault2:'pokerBack',
-                pokerDefault3:'pokerBack',
-                pokerDefault4:'pokerBack',
-                pokerDefault5:'pokerBack',
-            }
-            this.publicPokerFlag={
-                flop:false,
-                turn:false,
-                river:false
-            }
+            this.actionFlag=[false,false,false,false,false]
         }
         
     },
@@ -499,6 +486,8 @@ export default {
                 this.player4=playerInfo
             }else if(seatNum===(this.seatNum+5)%6){
                 this.player5=playerInfo
+            }else if(seatNum===this.seatNum){
+                
             }else{
                 alert(this.seatNum)
                 alert('排序出错')

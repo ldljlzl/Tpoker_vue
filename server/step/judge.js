@@ -4,7 +4,7 @@ const Player=require('../model/player')
 
 function judge(io,foldPlayers,playersInfo,personnalPoker,publicPoker){
     console.log('judge')
-    console.log(publicPoker)
+    // console.log(publicPoker)
     //每个玩家手牌+公共牌构成的牌组信息
     let playersPoker=[]
     personnalPoker.forEach(function(elem) {
@@ -25,22 +25,17 @@ function judge(io,foldPlayers,playersInfo,personnalPoker,publicPoker){
             })
         })  
         let level=judgeLevel(arr)
-        console.log(level)
+        // console.log(level)
         playersLevel.push({
             seatNum:elem.seatNum,
             level:level
         })
     })
 
-    foldPlayers.forEach((elem)=>{
-        playersLevel.push({
-            seatNum:elem.seatNum,
-            level:{
-                Level:-1,
-                Num:[0]
-            }
-        })
-    })
+    // console.log('-------------------------------------')
+    // console.log('foldPlayers:')
+    // console.log(foldPlayers)
+
     playersLevel.sort((player1,player2)=>{
         if(player1.level.Level!==player2.level.Level){
             return player2.level.Level-player1.level.Level
@@ -67,32 +62,43 @@ function judge(io,foldPlayers,playersInfo,personnalPoker,publicPoker){
 
     //按照牌型大小排序的玩家信息
     let players=[]
-
-    for(let i=0;i<playersLevel.length;i++){
-        let playerInfo={}
+    let players_temp=[]
+    for(let i=0;i<playersInfo.length;i++){
         playersInfo.forEach((elem)=>{
             if(elem.seatNum===playersLevel[i].seatNum){
-                playerInfo=elem
-                playerInfo.score=0-playerInfo.betNum
+                elem.score=0
                 players.push(elem)
             }
         })
     }
+    foldPlayers.forEach((elem)=>{
+        elem.score=0
+        players.push(elem)
+    })
 
-    for(let i=0;i<playersLevel.length;i++){
+    console.log('-------------------------------------')
+    console.log('players:')
+    console.log(players)
+
+    players_temp=players
+
+
+    for(let i=0;i<players.length;i++){
         //向玩家发送输赢结果
         if(i===0){
             console.log('win')
-            console.log(players[i])
+            // console.log(players[i])
             io.sockets.connected[players[i].socketId].emit('win') 
         }else{
             console.log('lose')
-            console.log(players[i])
+            // console.log(players[i])
             io.sockets.connected[players[i].socketId].emit('lose') 
         }
 
         //计算筹码情况
-        for(let j=i;j<playersLevel.length;j++){
+        for(let j=i;j<players.length;j++){
+            console.log('i:'+i)
+            console.log('j:'+j)
             if(players[i].betNum>=players[j].betNum){
                 console.log('大')
                 players[i].score+=players[j].betNum
@@ -112,29 +118,32 @@ function judge(io,foldPlayers,playersInfo,personnalPoker,publicPoker){
 
 
     let playerScore=[]
-    players.forEach((elem)=>{
+    players.forEach((elem,index)=>{
         playerScore.push({
             seatNum:elem.seatNum,
             //筹码增加或减少情况
             score:elem.score
+            // score:elem.score-players_temp[index].betNum
         })
     })
     //向玩家发送筹码情况
     io.sockets.emit('renewScore',playerScore) 
 
-    console.log('playerScore[0]:'+playerScore[0])
+    console.log('-------------------------------------')
+    console.log('playerScore')
     console.log(playerScore)
 
+    
+
     //更新用户，玩家两个数据库状态，向玩家发送筹码情况
-    players.forEach((elem)=>{
+    players.forEach((elem,index)=>{
         let username=elem.username
         User.findOne({account:username},(err,res)=>{
             if(err){
                 console.log(err)
             }else{
                 console.log('找到用户'+username)
-                console.log(res)
-                let score=res.score+elem.score
+                let score=res.score+elem.score-players_temp[index].betNum
                 User.update({account:username},{score:score},(err,res)=>{
                     if(err){
                         console.log(err)
@@ -149,7 +158,7 @@ function judge(io,foldPlayers,playersInfo,personnalPoker,publicPoker){
                 console.log(err)
             }else{
                 console.log('找到用户'+username)
-                let score=res.score+elem.score
+                let score=res.score+elem.score-players_temp[index].betNum
                 Player.update({username:username},{score:score,readyFlag:false},(err,res)=>{
                     if(err){
                         console.log(err)
