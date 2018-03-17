@@ -1,23 +1,23 @@
-#在线德州扑克
-\<br>  \<br> 
+# 在线德州扑克
+<br>  <br> 
 
 
 
-##项目来源
+## 项目来源
 <br>  
-本项目来源于IFE（百度前端技术学院）：<br>  
-综合实战：在线德州扑克（一）http://ife.baidu.com/course/detail/id/120<br>  
-综合实战：在线德州扑克（二）http://ife.baidu.com/course/detail/id/121<br>  
-综合实战：在线德州扑克（三）http://ife.baidu.com/course/detail/id/122<br>  
+本项目来源于IFE（百度前端技术学院）
+<br>  
+综合实战：在线德州扑克（一）http://ife.baidu.com/course/detail/id/120
+<br>  
+综合实战：在线德州扑克（二）http://ife.baidu.com/course/detail/id/121
+<br>  
+综合实战：在线德州扑克（三）http://ife.baidu.com/course/detail/id/122
+<br>  
 
 <br>  
-由于只有一个题目，项目一切需从头开始设计，且没有IFE学员提交符合要求的作品，于是想尝试一下，锻炼开发复杂应用的能力。
-<br>   
-技术栈 `vue.js+element-ui+socket.io+express+momgodb`
-<br>   
-本项目完成了一个2-6人即时对战的德州扑克游戏系统，附带即时通讯聊天室
-<br>  <br>  
-##主要难点
+由于只有一个题目，项目一切需从头开始设计，且没有IFE学员提交符合要求的作品，于是想尝试一下，锻炼开发复杂应用的能力。使用的技术栈为 `vue.js+element-ui+socket.io+express+momgodb`。实现了一个了一个2-6人即时对战的德州扑克游戏系统，附带即时通讯聊天室
+<br>  <br>  <br>  
+## 主要难点
 一.设计一套合理的`数据结构`代表52张牌和牌型，并实现和封装 `牌型判定` 和 `牌面大小比较` 的功能
 二.实现各个玩家`游戏即时交互`
 
@@ -34,10 +34,10 @@ River—发第五张牌，由小盲注开始，按照顺时针方向依次表态
 judge—经过前面4轮发牌和下注，剩余的玩家开始亮牌比大小，成牌最大的玩家赢取池底。
 
 
-<br>  <br>  
+<br>  <br>  <br>  
 大厅（写的比较简单）
 
-![Image 大厅](https://github.com/ldljlzl/projectPic/blob/master/Tpoker/大厅.png)
+![Image](https://github.com/ldljlzl/projectPic/blob/master/Tpoker/%E5%A4%A7%E5%8E%85.PNG)
 ![image](https://github.com/ldljlzl/projectPic/blob/master/Tpoker/大厅.png)
 <br><br> 
 简单的注册，登录
