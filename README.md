@@ -1,29 +1,6 @@
-# task-9
+# 在线德州扑克
 
-## Build Setup
 
-``` bash
-# install dependencies
-npm install
-
-# serve with hot reload at localhost:8080
-npm run dev
-
-# build for production with minification
-npm run build
-
-# build for production and view the bundle analyzer report
-npm run build --report
-
-# run unit tests
-npm run unit
-
-# run e2e tests
-npm run e2e
-
-# run all tests
-npm test
-```
 主要使用 `vue.js+element-ui+socket.io+express+momgodb`
 
 
@@ -38,7 +15,7 @@ npm test
 任务中的“在线德州扑克”类似于“微扑克”或“德扑圈”，是朋友间组织牌局的工具应用。
 这一部分，我们通过使用JavaScript编写基础算法的方式，了解德州扑克的基本规则。规则介绍参考（[百度百科](http://baike.baidu.com/link?url=jKADh0XgSlQXR1l9WRPDNauZ1sBBSCcYdzhy-xDuJIbvimpNh6St0l3d34HZWLa1w_toImFXjZXycJzkyeSfHFXcuuDEKDHmjmY3GtyO33BAiT8wuk5Wwoc1pRp9DZ6LZiNLcjNPmwn5Io1xjP_iMU21Nni8CSUEhrrzfvmXLcgsFWdpHSs-gTeK_qhPeonWjJBrIB7uzSCUDQWFTgY02zK_q7CkEUv6QwCKELM1pfK) or [维基百科](https://zh.wikipedia.org/wiki/%E5%BE%B7%E5%B7%9E%E6%92%B2%E5%85%8B)）
 ### 主要难点
-一.设计一套合理的`数据结构`代表52张牌和牌型，并实现和封装`牌型判定`和`牌面大小比较`的功能
+一.设计一套合理的`数据结构`代表52张牌和牌型，并实现和封装`牌型判定`和`牌面大小比较`的功能<br> 
 二.实现各个玩家`游戏即时交互`
 
 
@@ -88,7 +65,7 @@ river
 
 <br><br> 
 失败后的界面（即时完成筹码清算）
-![image lose](https://github.com/ldljlzl/projectPic/blob/master/Tpoker/river.PNG)
+![image lose](https://github.com/ldljlzl/projectPic/blob/master/Tpoker/lose.PNG)
 
 
 
